@@ -1,0 +1,27 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Global Loader",
+	"Description": "Load SoftObjectPaths and SoftObjectClasses globally.  Can be used to return typed objects in native or UObject in Blueprint.",
+	"Category": "Programming",
+	"CreatedBy": "Tom Shinton",
+	"CreatedByURL": "www.tomshinton.com",
+	"DocsURL": "www.tomshinton.com/assets/content/plugins/GlobalLoader.html",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/bdd86a0522f7418f890be26feef07725",
+	"SupportURL": "",
+	"EngineVersion": "5.1.0",
+	"CanContainContent": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "GlobalLoader",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Android"
+			]
+		}
+	]
+}
