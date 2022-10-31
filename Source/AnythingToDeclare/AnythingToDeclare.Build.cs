@@ -8,6 +8,18 @@ public class AnythingToDeclare : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay" });
+		// Core
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core",
+			"CoreUObject",
+			"Engine",
+			//"GameplayAbilities",
+			"GameplayTags",
+			//"GameplayTasks",
+			"GlobalLoader",
+			"InputCore",
+		});
+
 	}
 }
