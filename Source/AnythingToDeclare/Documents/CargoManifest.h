@@ -12,10 +12,10 @@ struct FCargoManifestEntry
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UCargoTypeDefinition* CargoType;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	int32 TotalWeight;
 };
 
@@ -24,15 +24,15 @@ struct FCargoManifest
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	FString ShipName;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	FString OriginPlanet;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	FString DestinationPlanet;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TArray<FCargoManifestEntry> Cargo;
 };

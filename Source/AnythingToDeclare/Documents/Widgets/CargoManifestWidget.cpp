@@ -26,9 +26,9 @@ void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
 		CargoManifestEntries->ClearChildren();
 		for(const FCargoManifestEntry& Entry : InManifest.Cargo)
 		{
-			UCargoManifestEntryWidget* NewEntry = NewObject<UCargoManifestEntryWidget>(this, CargoManifestEntryWidgetClass->GetClass());
+			UCargoManifestEntryWidget* NewEntry = CreateWidget<UCargoManifestEntryWidget>(this, CargoManifestEntryWidgetClass);
 			NewEntry->SetCargoManifestEntry(Entry);
-			CargoManifestEntries->AddChild(NewEntry);
+			CargoManifestEntries->AddChildToVerticalBox(NewEntry);
 		}
 	}
 }

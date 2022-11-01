@@ -26,6 +26,11 @@
 		},
 		{
 			"Name": "GlobalLoader",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/bdd86a0522f7418f890be26feef07725"
+		},
+		{
+			"Name": "HoudiniEngine",
 			"Enabled": true
 		}
 	]
