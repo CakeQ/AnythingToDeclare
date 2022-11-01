@@ -7,7 +7,7 @@
 
 #include "CargoManifest.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCargoManifestEntry
 {
 	GENERATED_BODY()
@@ -19,7 +19,7 @@ public:
 	int32 TotalWeight;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCargoManifest
 {
 	GENERATED_BODY()
