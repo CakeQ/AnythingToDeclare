@@ -4,7 +4,7 @@
 #include "AnythingToDeclare/Documents/CargoManifest.h"
 
 #include "UMG/Public/Blueprint/UserWidget.h"
-#include "UMG/Public/Components/HorizontalBox.h"
+#include "UMG/Public/Components/Verticalbox.h"
 
 #include "CargoManifestWidget.generated.h"
 
@@ -30,7 +30,7 @@ protected:
 	UTextBlock* DestinationPlanet;
 
 	UPROPERTY(meta = (BindWidget))
-	UHorizontalBox* CargoManifestEntries;
+	UVerticalBox* CargoManifestEntries;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCargoManifestEntryWidget> CargoManifestEntryWidgetClass;
