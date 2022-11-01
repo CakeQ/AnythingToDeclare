@@ -7,11 +7,14 @@ void UCargoManifestEntryWidget::SetCargoManifestEntry(const FCargoManifestEntry&
 {
 	if(CargoTypeName != nullptr)
 	{
-		CargoTypeName->SetText(FText::FromString(InManifestEntry.CargoType));
-	}
+		if(InManifestEntry.CargoType != nullptr)
+		{
+			CargoTypeName->SetText(FText::FromString(InManifestEntry.CargoType->Name));
+		}
 	
-	if(CargoWeight != nullptr)
-	{
-		CargoWeight->SetText(FText::AsNumber(InManifestEntry.TotalWeight) + TEXT("T"));
+		if(CargoWeight != nullptr)
+		{
+			CargoWeight->SetText(FText::FromString(FString(TEXT("%iT"), InManifestEntry.TotalWeight * InManifestEntry.CargoType->WeightMultiplierPerUnit)));
+		}
 	}
 }

@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "AnythingToDeclare/Documents/CargoManifest.h"
 
 #include "UMG/Public/Blueprint/UserWidget.h"
 
 #include "CargoManifestEntryWidget.generated.h"
 
 class UTextBlock;
-struct FCargoManifestEntry;
 
 UCLASS(Abstract, Blueprintable)
 class UCargoManifestEntryWidget : public UUserWidget

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "AnythingToDeclare/Documents/CargoManifest.h"
 
 #include "UMG/Public/Blueprint/UserWidget.h"
 #include "UMG/Public/Components/HorizontalBox.h"
@@ -9,7 +10,6 @@
 
 class UCargoManifestEntryWidget;
 class UTextBlock;
-struct FCargoManifest;
 
 UCLASS(Abstract, Blueprintable)
 class UCargoManifestWidget : public UUserWidget
