@@ -21,9 +21,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FString CallSign;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftObjectPath Portrait;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftObjectPath FacePortrait;
 };
