@@ -9,6 +9,7 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
+				"DeveloperSettings",
 				"Engine",
 				"GameplayAbilities",
 				"UMG"

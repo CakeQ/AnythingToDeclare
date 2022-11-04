@@ -11,11 +11,14 @@
 class UCharacterAppearanceDataAsset;
 
 UCLASS(Blueprintable)
-class UDayDefinitionAsset : public UDataAsset
+class ANYTHINGTODECLARE_API UDayDefinitionAsset : public UDataAsset
 {
 	GENERATED_BODY()
 	
 public:
+
+	const UCharacterAppearanceDataAsset* FindCharacterByAppearanceNumber(const int32 InNumber);
+	
 	UPROPERTY(EditDefaultsOnly)
 	int32 DayNumber;
 
