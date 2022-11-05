@@ -3,42 +3,51 @@
 
 #include "HoldToConfirmButton.h"
 
-UHoldToConfirmButton::UHoldToConfirmButton()
-	: ConfirmTime(2.0f)
+UHoldToConfirmButton::UHoldToConfirmButton(const FObjectInitializer& InInitialiser)
+	: Super(InInitialiser)
+	, HasConfirmed(false)
+	, ConfirmTime(2.0f)
+	, ProgressedTime(0.0f)
 {
 }
 
-void UHoldToConfirmButton::PostLoad()
+void UHoldToConfirmButton::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
-	Super::PostLoad();
-
-	OnPressed.AddDynamic(this, &UHoldToConfirmButton::StartConfirm);
-	OnReleased.AddDynamic(this, &UHoldToConfirmButton::CancelConfirm);
-}
-
-void UHoldToConfirmButton::StartConfirm()
-{
-	if(!ConfirmTimer.IsValid())
+	Super::NativeTick(MyGeometry, InDeltaTime);
+	if(ButtonWidget != nullptr)
 	{
-		if(const UWorld* World = GetWorld())
+		if(ButtonWidget->IsPressed())
 		{
-			FTimerManager& TimerManager = World->GetTimerManager();
-			TimerManager.SetTimer(ConfirmTimer, this, &UHoldToConfirmButton::OnConfirmed, ConfirmTime, false);
+			ProgressedTime += InDeltaTime;
+			if(ProgressBar != nullptr)
+			{
+				ProgressBar->SetPercent(FMath::Min(ProgressedTime / ConfirmTime, 1.0f));
+			}
+			
+			if(ProgressedTime >= ConfirmTime)
+			{
+				OnConfirmed();
+			}
+		}
+		else if(!FMath::IsNearlyZero(ProgressedTime))
+		{
+			CancelConfirm();
 		}
 	}
 }
 
 void UHoldToConfirmButton::CancelConfirm()
 {
-	if(const UWorld* World = GetWorld())
+	HasConfirmed = false;
+	ProgressedTime = 0.0f;
+	if(ProgressBar != nullptr)
 	{
-		FTimerManager& TimerManager = World->GetTimerManager();
-		TimerManager.ClearTimer(ConfirmTimer);
+		ProgressBar->SetPercent(ProgressedTime / ConfirmTime);
 	}
 }
 
 void UHoldToConfirmButton::OnConfirmed()
 {
 	OnConfirmedEvent.Broadcast();
-	ConfirmTimer.Invalidate();
+	HasConfirmed = true;
 }

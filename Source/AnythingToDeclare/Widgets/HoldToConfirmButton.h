@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/Button.h"
+#include "Components/ProgressBar.h"
 #include "UObject/Object.h"
 #include "HoldToConfirmButton.generated.h"
 
@@ -12,25 +13,34 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnButtonConfirmedEvent);
 /**
  * 
  */
-UCLASS()
-class ANYTHINGTODECLARE_API UHoldToConfirmButton : public UButton
+UCLASS(Abstract, Blueprintable)
+class ANYTHINGTODECLARE_API UHoldToConfirmButton : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	UHoldToConfirmButton();
+	UHoldToConfirmButton(const FObjectInitializer& InInitialiser);
 	
-	virtual void PostLoad() override;
-
 	void StartConfirm();
 	void CancelConfirm();
 	void OnConfirmed();
+
+protected:
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
 private:
+	bool HasConfirmed;
+	
 	UPROPERTY(EditAnywhere)
 	float ConfirmTime;
-	
-	FTimerHandle ConfirmTimer;
 
+	float ProgressedTime;
+	
 	FOnButtonConfirmedEvent OnConfirmedEvent;
+	
+	UPROPERTY(meta = (BindWidget))
+	UButton* ButtonWidget;
+	
+	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
+	UProgressBar* ProgressBar;
 };
