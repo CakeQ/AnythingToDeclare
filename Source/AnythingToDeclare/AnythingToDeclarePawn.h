@@ -1,8 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Daniel Thompson and Archie Whitehead @ https://github.com/CakeQ/
 
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AnythingToDeclareGameMode.h"
+#include "AnythingToDeclareGameState.h"
 #include "GameFramework/Pawn.h"
 #include "AnythingToDeclarePawn.generated.h"
 
@@ -11,6 +13,9 @@ class AAnythingToDeclarePawn : public APawn
 {
 	GENERATED_UCLASS_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+	
 public:
 
 	virtual void Tick(float DeltaSeconds) override;
@@ -21,8 +26,10 @@ public:
 
 protected:
 	void TriggerClick();
-	void TraceForBlock(const FVector& Start, const FVector& End, bool bDrawDebugHelpers);
+	
+	void CycleCameraNext();
+	void CycleCameraPrev();
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-	class AAnythingToDeclareBlock* CurrentBlockFocus;
+	UPROPERTY()
+	TWeakObjectPtr<AAnythingToDeclareGameState> CachedGameState;
 };

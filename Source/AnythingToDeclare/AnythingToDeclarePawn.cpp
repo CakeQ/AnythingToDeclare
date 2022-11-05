@@ -1,7 +1,8 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Daniel Thompson and Archie Whitehead @ https://github.com/CakeQ/
 
 #include "AnythingToDeclarePawn.h"
 #include "AnythingToDeclareBlock.h"
+#include "AnythingToDeclareGameState.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
@@ -13,16 +14,24 @@ AAnythingToDeclarePawn::AAnythingToDeclarePawn(const FObjectInitializer& ObjectI
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
+void AAnythingToDeclarePawn::BeginPlay()
+{
+	Super::BeginPlay();
+	if(UWorld* World = GetWorld())
+	{
+		if(AGameStateBase* GameStateBase = World->GetGameState())
+		{
+			if(AAnythingToDeclareGameState* GameState = Cast<AAnythingToDeclareGameState>(GameStateBase))
+			{
+				CachedGameState = GameState;
+			}
+		}
+	}
+}
+
 void AAnythingToDeclarePawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		FVector Start, Dir;
-		PC->DeprojectMousePositionToWorld(Start, Dir);
-		TraceForBlock(Start, Start + (Dir * 8000.0f), false);
-	}
 }
 
 void AAnythingToDeclarePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -30,6 +39,8 @@ void AAnythingToDeclarePawn::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("TriggerClick", EInputEvent::IE_Pressed, this, &AAnythingToDeclarePawn::TriggerClick);
+	PlayerInputComponent->BindAction("CycleCameraNext", EInputEvent::IE_Pressed, this, &AAnythingToDeclarePawn::CycleCameraNext);
+	PlayerInputComponent->BindAction("CycleCameraPrev", EInputEvent::IE_Pressed, this, &AAnythingToDeclarePawn::CycleCameraPrev);
 }
 
 void AAnythingToDeclarePawn::CalcCamera(float DeltaTime, struct FMinimalViewInfo& OutResult)
@@ -41,40 +52,32 @@ void AAnythingToDeclarePawn::CalcCamera(float DeltaTime, struct FMinimalViewInfo
 
 void AAnythingToDeclarePawn::TriggerClick()
 {
-	if (CurrentBlockFocus)
+}
+
+void AAnythingToDeclarePawn::CycleCameraNext()
+{
+	if(AAnythingToDeclareGameState* GameState = CachedGameState.Get())
 	{
-		CurrentBlockFocus->HandleClicked();
+		if(AActor* NextCameraActor = GameState->CycleCameraNext())
+		{
+			if(APlayerController* PlayerController = Cast<APlayerController>(Controller))
+			{
+				PlayerController->SetViewTargetWithBlend(NextCameraActor, 1.0f, VTBlend_EaseOut);
+			}
+		}
 	}
 }
 
-void AAnythingToDeclarePawn::TraceForBlock(const FVector& Start, const FVector& End, bool bDrawDebugHelpers)
+void AAnythingToDeclarePawn::CycleCameraPrev()
 {
-	FHitResult HitResult;
-	GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
-	if (bDrawDebugHelpers)
+	if(AAnythingToDeclareGameState* GameState = CachedGameState.Get())
 	{
-		DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor::Red);
-		DrawDebugSolidBox(GetWorld(), HitResult.Location, FVector(20.0f), FColor::Red);
-	}
-	if (HitResult.GetHitObjectHandle().IsValid())
-	{
-		if (HitResult.GetHitObjectHandle() != CurrentBlockFocus)
+		if(AActor* PrevCameraActor = GameState->CycleCameraPrev())
 		{
-			if (CurrentBlockFocus)
+			if(APlayerController* PlayerController = Cast<APlayerController>(Controller))
 			{
-				CurrentBlockFocus->Highlight(false);
+				PlayerController->SetViewTargetWithBlend(PrevCameraActor, 1.0f, VTBlend_EaseOut);
 			}
-			AAnythingToDeclareBlock* HitBlock = HitResult.GetHitObjectHandle().FetchActor<AAnythingToDeclareBlock>();
-			if (HitBlock)
-			{
-				HitBlock->Highlight(true);
-			}
-			CurrentBlockFocus = HitBlock;
 		}
-	}
-	else if (CurrentBlockFocus)
-	{
-		CurrentBlockFocus->Highlight(false);
-		CurrentBlockFocus = nullptr;
 	}
 }

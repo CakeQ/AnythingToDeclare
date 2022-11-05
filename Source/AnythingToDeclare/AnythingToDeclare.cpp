@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Daniel Thompson and Archie Whitehead @ https://github.com/CakeQ/
 
 #include "AnythingToDeclare.h"
 #include "Modules/ModuleManager.h"
