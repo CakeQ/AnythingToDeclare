@@ -10,6 +10,8 @@
 
 AAnythingToDeclarePawn::AAnythingToDeclarePawn(const FObjectInitializer& ObjectInitializer) 
 	: Super(ObjectInitializer)
+	, CameraCycleBlendTime(1.0f)
+	, CameraCycleBlendType(VTBlend_EaseOut)
 {
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
@@ -62,7 +64,7 @@ void AAnythingToDeclarePawn::CycleCameraNext()
 		{
 			if(APlayerController* PlayerController = Cast<APlayerController>(Controller))
 			{
-				PlayerController->SetViewTargetWithBlend(NextCameraActor, 1.0f, VTBlend_EaseOut);
+				PlayerController->SetViewTargetWithBlend(NextCameraActor, CameraCycleBlendTime, CameraCycleBlendType, CameraCycleBlendExp);
 			}
 		}
 	}
@@ -76,7 +78,7 @@ void AAnythingToDeclarePawn::CycleCameraPrev()
 		{
 			if(APlayerController* PlayerController = Cast<APlayerController>(Controller))
 			{
-				PlayerController->SetViewTargetWithBlend(PrevCameraActor, 1.0f, VTBlend_EaseOut);
+				PlayerController->SetViewTargetWithBlend(PrevCameraActor, CameraCycleBlendTime, CameraCycleBlendType, CameraCycleBlendExp);
 			}
 		}
 	}

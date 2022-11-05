@@ -90,17 +90,16 @@ AActor* AAnythingToDeclareGameState::CycleCameraNext()
 	{
 		if(AGenericConsole* ConsolePtr = Console.Get())
 		{
-			if(ConsolePtr->GetCameraOrder() > CurrentCameraOrder && (ConsoleToReturn == nullptr || ConsoleToReturn->GetCameraOrder() > ConsolePtr->GetCameraOrder()))
+			if(ConsoleToReturn == nullptr || (ConsolePtr->GetCameraOrder() > CurrentCameraOrder && ConsoleToReturn->GetCameraOrder() < ConsolePtr->GetCameraOrder()))
 			{
-				// ConsolePtr->Focus();
 				ConsoleToReturn = ConsolePtr;
-				break;
 			}
 		}
 	}
 	if(ConsoleToReturn != nullptr)
 	{
 		FocusedConsole = ConsoleToReturn;
+		// ConsolePtr->Focus();
 		return ConsoleToReturn;
 	}
 
@@ -128,9 +127,8 @@ AActor* AAnythingToDeclareGameState::CycleCameraPrev()
 	{
 		if(AGenericConsole* ConsolePtr = Console.Get())
 		{
-			if(ConsolePtr->GetCameraOrder() < CurrentCameraOrder && (ConsoleToReturn == nullptr || ConsoleToReturn->GetCameraOrder() < ConsolePtr->GetCameraOrder()))
+			if(ConsoleToReturn == nullptr || (ConsolePtr->GetCameraOrder() < CurrentCameraOrder && ConsoleToReturn->GetCameraOrder() > ConsolePtr->GetCameraOrder()))
 			{
-				// ConsolePtr->Focus();
 				ConsoleToReturn = ConsolePtr;
 				break;
 			}
@@ -139,6 +137,7 @@ AActor* AAnythingToDeclareGameState::CycleCameraPrev()
 	if(ConsoleToReturn != nullptr)
 	{
 		FocusedConsole = ConsoleToReturn;
+		// ConsolePtr->Focus();
 		return ConsoleToReturn;
 	}
 

@@ -30,6 +30,15 @@ protected:
 	void CycleCameraNext();
 	void CycleCameraPrev();
 
+	UPROPERTY(EditDefaultsOnly)
+	float CameraCycleBlendTime;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CameraCycleBlendExp;
+
+	UPROPERTY(EditDefaultsOnly)
+	TEnumAsByte<EViewTargetBlendFunction> CameraCycleBlendType;
+	
 	UPROPERTY()
 	TWeakObjectPtr<AAnythingToDeclareGameState> CachedGameState;
 };
