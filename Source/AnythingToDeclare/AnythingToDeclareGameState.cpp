@@ -72,35 +72,31 @@ void AAnythingToDeclareGameState::OnDayNotFound()
 {
 }
 
-void AAnythingToDeclareGameState::SetPrimaryCameraActor(AActor* InActor)
-{
-	PrimaryCameraActor = InActor;
-}
-
 AActor* AAnythingToDeclareGameState::CycleCameraNext()
 {
 	int32 CurrentCameraOrder = 0;
+	AGenericConsole* ConsoleToReturn = nullptr;
+	
 	if(const AGenericConsole* FocusedConsolePtr = FocusedConsole.Get())
 	{
 		CurrentCameraOrder = FocusedConsolePtr->GetCameraOrder();
 	}
 
-	AGenericConsole* ConsoleToReturn = nullptr;
 	for(const TWeakObjectPtr<AGenericConsole>& Console : Consoles)
 	{
 		if(AGenericConsole* ConsolePtr = Console.Get())
 		{
-			if(ConsolePtr->GetCameraOrder() > CurrentCameraOrder && (ConsoleToReturn == nullptr || ConsoleToReturn->GetCameraOrder() > ConsolePtr->GetCameraOrder()))
+			if(CurrentCameraOrder < ConsolePtr->GetCameraOrder() && (ConsoleToReturn == nullptr
+				 || ConsolePtr->GetCameraOrder() < ConsoleToReturn->GetCameraOrder()))
 			{
-				// ConsolePtr->Focus();
 				ConsoleToReturn = ConsolePtr;
-				break;
 			}
 		}
 	}
-	if(ConsoleToReturn != nullptr)
+	if(ConsoleToReturn != nullptr && ConsoleToReturn != FocusedConsole)
 	{
 		FocusedConsole = ConsoleToReturn;
+		// ConsolePtr->Focus();
 		return ConsoleToReturn;
 	}
 
@@ -112,33 +108,34 @@ AActor* AAnythingToDeclareGameState::CycleCameraNext()
 		}
 		FocusedConsole = nullptr;
 	}
-	return PrimaryCameraActor;
+	return nullptr;
 }
 
 AActor* AAnythingToDeclareGameState::CycleCameraPrev()
 {
-	int32 CurrentCameraOrder = 0;
+	int32 CurrentCameraOrder = 200;
+	AGenericConsole* ConsoleToReturn = nullptr;
+	
 	if(const AGenericConsole* FocusedConsolePtr = FocusedConsole.Get())
 	{
 		CurrentCameraOrder = FocusedConsolePtr->GetCameraOrder();
 	}
 
-	AGenericConsole* ConsoleToReturn = nullptr;
 	for(const TWeakObjectPtr<AGenericConsole>& Console : Consoles)
 	{
 		if(AGenericConsole* ConsolePtr = Console.Get())
 		{
-			if(ConsolePtr->GetCameraOrder() < CurrentCameraOrder && (ConsoleToReturn == nullptr || ConsoleToReturn->GetCameraOrder() < ConsolePtr->GetCameraOrder()))
+			if(CurrentCameraOrder > ConsolePtr->GetCameraOrder() && (ConsoleToReturn == nullptr
+				 || ConsolePtr->GetCameraOrder() > ConsoleToReturn->GetCameraOrder()))
 			{
-				// ConsolePtr->Focus();
 				ConsoleToReturn = ConsolePtr;
-				break;
 			}
 		}
 	}
-	if(ConsoleToReturn != nullptr)
+	if(ConsoleToReturn != nullptr && ConsoleToReturn != FocusedConsole)
 	{
 		FocusedConsole = ConsoleToReturn;
+		// ConsolePtr->Focus();
 		return ConsoleToReturn;
 	}
 

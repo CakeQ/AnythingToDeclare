@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AnythingToDeclareGameMode.h"
 #include "AnythingToDeclareGameState.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Pawn.h"
 #include "AnythingToDeclarePawn.generated.h"
 
@@ -22,14 +23,30 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	virtual void CalcCamera(float DeltaTime, struct FMinimalViewInfo& OutResult) override;
-
 protected:
 	void TriggerClick();
 	
 	void CycleCameraNext();
 	void CycleCameraPrev();
 
+	UPROPERTY(EditDefaultsOnly)
+	float CameraCycleBlendTime;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CameraCycleBlendExp;
+
+	UPROPERTY(EditDefaultsOnly)
+	TEnumAsByte<EViewTargetBlendFunction> CameraCycleBlendType;
+	
 	UPROPERTY()
 	TWeakObjectPtr<AAnythingToDeclareGameState> CachedGameState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite);
+	USphereComponent* BaseComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USpringArmComponent* SpringArmComponent;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite);
+	UCameraComponent* CameraComponent;
 };
