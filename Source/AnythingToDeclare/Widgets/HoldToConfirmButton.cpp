@@ -26,7 +26,7 @@ void UHoldToConfirmButton::NativeTick(const FGeometry& MyGeometry, float InDelta
 			
 			if(ProgressedTime >= ConfirmTime)
 			{
-				OnConfirmed();
+				FireOnConfirmed();
 			}
 		}
 		else if(!FMath::IsNearlyZero(ProgressedTime))
@@ -46,8 +46,8 @@ void UHoldToConfirmButton::CancelConfirm()
 	}
 }
 
-void UHoldToConfirmButton::OnConfirmed()
+void UHoldToConfirmButton::FireOnConfirmed()
 {
-	OnConfirmedEvent.Broadcast();
+	OnConfirmed.Broadcast();
 	HasConfirmed = true;
 }

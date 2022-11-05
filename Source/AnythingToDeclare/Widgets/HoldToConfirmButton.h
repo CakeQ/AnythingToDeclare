@@ -21,10 +21,11 @@ class ANYTHINGTODECLARE_API UHoldToConfirmButton : public UUserWidget
 public:
 	UHoldToConfirmButton(const FObjectInitializer& InInitialiser);
 	
-	void StartConfirm();
 	void CancelConfirm();
-	void OnConfirmed();
+	void FireOnConfirmed();
 
+	FOnButtonConfirmedEvent OnConfirmed;
+	
 protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
@@ -35,8 +36,6 @@ private:
 	float ConfirmTime;
 
 	float ProgressedTime;
-	
-	FOnButtonConfirmedEvent OnConfirmedEvent;
 	
 	UPROPERTY(meta = (BindWidget))
 	UButton* ButtonWidget;
