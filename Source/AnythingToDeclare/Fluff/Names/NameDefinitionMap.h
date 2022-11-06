@@ -3,8 +3,24 @@
 #include "CoreMinimal.h"
 
 #include <Engine/DataAsset.h>
+#include <Engine/DataTable.h>
 
 #include "NameDefinitionMap.generated.h"
+
+USTRUCT(BlueprintType)
+struct FNameDefinitionData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+
+	FNameDefinitionData()
+		: Name(NAME_None)
+	{}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Name)
+	FName Name;
+};
 
 UCLASS(Blueprintable)
 class UNameDefinitionMap : public UDataAsset
@@ -13,25 +29,25 @@ class UNameDefinitionMap : public UDataAsset
 	
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FString> Names;
+	UDataTable* Names;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TMap<int32, float> NameComplexityModifiers;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FString> Surnames;
+	UDataTable* Surnames;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FString> CallSignWords;
+	UDataTable* CallSignWords;
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<int32, float> CallSignComplexityModifiers;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FString> ShipNamePrefixes;
+	UDataTable* ShipNamePrefixes;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FString> ShipNameWords;
+	UDataTable* ShipNameWords;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TMap<int32, float> ShipNameComplexityModifiers;

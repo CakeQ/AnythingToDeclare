@@ -9,6 +9,14 @@
 #include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Names/NameDefinitionMap.h"
 
+namespace
+{
+	namespace CustomsRequestsHelperPrivates
+	{
+		const FString CustomsRequestHelperDataTableContextString = TEXT("CustomsRequestsHelper");
+	}
+}
+
 void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition)
 {
 	FillFromCharacterAppearance(InRequest);
@@ -41,6 +49,7 @@ void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const
 		}
 	}
 
+	// TODO: Dont allow same as origin
 	if(InRequest.DestinationLocation == nullptr)
 	{
 		if(InRequest.RequestType == ECustomsRequestType::Inbound)
@@ -61,17 +70,22 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCargoManifest& InManifest, co
 	if(InManifest.ShipName.IsEmpty())
 	{
 		const int32 ShipNameComplexity = RandomEntryWithWeight<int32>(InDataMap->Names->ShipNameComplexityModifiers);
+
+		const TArray<FName>& PrefixNames = InDataMap->Names->ShipNamePrefixes->GetRowNames();
+		const TArray<FName>& ShipNameWords = InDataMap->Names->ShipNameWords->GetRowNames();
 		
-		const int32 PrefixIndex = FMath::RandRange(0, InDataMap->Names->ShipNamePrefixes.Num() - 1);
-		InManifest.ShipName.Append(InDataMap->Names->ShipNamePrefixes[PrefixIndex]);
+		const FNameDefinitionData* ChosenPrefix = InDataMap->Names->ShipNamePrefixes->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+		InManifest.ShipName.Append(ChosenPrefix->Name.ToString());
 		for(int32 i = 0; i < ShipNameComplexity; i++)
 		{
 			if(!InManifest.ShipName.IsEmpty())
 			{
 				InManifest.ShipName.Append(TEXT(" "));
 			}
-			const int32 NameIndex = FMath::RandRange(0, InDataMap->Names->ShipNameWords.Num() - 1);
-			InManifest.ShipName.Append(InDataMap->Names->ShipNameWords[NameIndex]);
+			
+			const FNameDefinitionData* ChosenWord = InDataMap->Names->ShipNameWords->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+			const int32 NameIndex = FMath::RandRange(0, ShipNameWords.Num() - 1);
+			InManifest.ShipName.Append(ChosenWord->Name.ToString());
 		}
 	}
 
@@ -116,6 +130,8 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCargoManifest& InManifest, co
 	float RemainingWeight = 1000.0f;
 	int32 UnitsLeft = 100;
 
+	// TODO: Prevent duplicate cargo types
+	// TODO: Match CargoComplexity better
 	for(int32 i = 0; i < CargoComplexity; i++)
 	{
 		if(MutualCargoTypes.Num() > 0 ? FMath::RandBool() : false)
