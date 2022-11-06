@@ -22,5 +22,8 @@ protected:
 	UTextBlock* CargoTypeName;
 	
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* CargoUnits;
+	
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CargoWeight;
 };

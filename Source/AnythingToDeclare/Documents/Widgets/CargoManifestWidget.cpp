@@ -16,9 +16,19 @@ void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
 		OriginPlanet->SetText(FText::FromString(InManifest.OriginLocation));
 	}
 
+	if(OriginSubLocation != nullptr)
+	{
+		OriginSubLocation->SetText(FText::FromString(InManifest.OriginSubLocation));
+	}
+
 	if(DestinationPlanet != nullptr)
 	{
 		DestinationPlanet->SetText(FText::FromString(InManifest.DestinationLocation));
+	}
+
+	if(DestinationSubLocation != nullptr)
+	{
+		DestinationSubLocation->SetText(FText::FromString(InManifest.DestinationSubLocation));
 	}
 
 	if(CargoManifestEntries != nullptr)

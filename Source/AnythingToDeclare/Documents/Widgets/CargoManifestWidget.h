@@ -27,7 +27,13 @@ protected:
 	UTextBlock* OriginPlanet;
 	
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* OriginSubLocation;
+	
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DestinationPlanet;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* DestinationSubLocation;
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* CargoManifestEntries;

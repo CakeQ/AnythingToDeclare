@@ -116,7 +116,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCargoManifest& InManifest, co
 	float RemainingWeight = 1000.0f;
 	int32 UnitsLeft = 100;
 
-	for(int32 i = 1; i < CargoComplexity; i++)
+	for(int32 i = 0; i < CargoComplexity; i++)
 	{
 		if(MutualCargoTypes.Num() > 0 ? FMath::RandBool() : false)
 		{

@@ -25,8 +25,8 @@ class ANYTHINGTODECLARE_API UCustomsRequestDataMap : public UDataAsset
 	
 public:
 	UCustomsRequestDataMap();
-
-	virtual void PostInitProperties() override;
+	
+	virtual void PostLoad() override;
 	
 	UPROPERTY(EditDefaultsOnly)
 	UNameDefinitionMap* Names;

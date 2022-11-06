@@ -14,7 +14,7 @@
 AAnythingToDeclareGameState::AAnythingToDeclareGameState(const FObjectInitializer& InInitializer)
 	: Super(InInitializer)
 	, DayNumber(1)
-	, CurrentRequestCount(1)
+	, CurrentRequestCount(0)
 {
 }
 
@@ -56,7 +56,6 @@ void AAnythingToDeclareGameState::BeginPlay()
 			Consoles.Add(ConsolePtr);
 		}
 	}
-	
 }
 
 void AAnythingToDeclareGameState::StartDay(const int32 InDayNumber)
@@ -83,6 +82,7 @@ void AAnythingToDeclareGameState::StartDay(const int32 InDayNumber)
 void AAnythingToDeclareGameState::OnDayLoaded(const UDayDefinitionAsset* InDayAsset)
 {
 	CurrentDayDefinition = InDayAsset;
+	NextRequest();
 }
 
 void AAnythingToDeclareGameState::OnDayNotFound()

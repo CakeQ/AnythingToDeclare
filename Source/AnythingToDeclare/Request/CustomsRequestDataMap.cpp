@@ -9,9 +9,9 @@ UCustomsRequestDataMap::UCustomsRequestDataMap()
 {
 }
 
-void UCustomsRequestDataMap::PostInitProperties()
+void UCustomsRequestDataMap::PostLoad()
 {
-	Super::PostInitProperties();
+	Super::PostLoad();
 
 	LocationWeights.Empty();
 	SubLocationWeights.Empty();
