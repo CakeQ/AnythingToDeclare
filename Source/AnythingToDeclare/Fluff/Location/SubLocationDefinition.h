@@ -4,25 +4,29 @@
 
 #include <Engine/DataAsset.h>
 
-#include "PlanetDefinition.generated.h"
+#include "SubLocationDefinition.generated.h"
 
+class ULocationDefinition;
 class UCargoTypeDefinition;
 
 UCLASS(Blueprintable)
-class UPlanetDefinition : public UDataAsset
+class USubLocationDefinition : public UDataAsset
 {
 	GENERATED_BODY()
 	
 public:
 	UPROPERTY(EditDefaultsOnly)
+	float PopularityModifier;
+	
+	UPROPERTY(EditDefaultsOnly)
 	FString Name;
 
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
-	FSoftClassPath Icon;
-	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCargoTypeDefinition*> SuppliedCargoTypes;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCargoTypeDefinition*> DemandedCargoTypes;
+
+	UPROPERTY(EditDefaultsOnly)
+	ULocationDefinition* Location;
 };

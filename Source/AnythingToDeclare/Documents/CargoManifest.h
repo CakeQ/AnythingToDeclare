@@ -12,11 +12,24 @@ struct FCargoManifestEntry
 {
 	GENERATED_BODY()
 public:
+
+	FCargoManifestEntry()
+		: CargoType(nullptr)
+		, TotalUnits(0)
+	{
+	}
+	
+	FCargoManifestEntry(UCargoTypeDefinition* InCargoType, const int32 InTotalUnits)
+		: CargoType(InCargoType)
+		, TotalUnits(InTotalUnits)
+	{
+	}
+	
 	UPROPERTY(EditAnywhere)
 	UCargoTypeDefinition* CargoType;
 
 	UPROPERTY(EditAnywhere)
-	int32 TotalWeight;
+	int32 TotalUnits;
 };
 
 USTRUCT(BlueprintType)
@@ -28,10 +41,16 @@ public:
 	FString ShipName;
 
 	UPROPERTY(EditAnywhere)
-	FString OriginPlanet;
+	FString OriginLocation;
 
 	UPROPERTY(EditAnywhere)
-	FString DestinationPlanet;
+	FString OriginSubLocation;
+
+	UPROPERTY(EditAnywhere)
+	FString DestinationLocation;
+
+	UPROPERTY(EditAnywhere)
+	FString DestinationSubLocation;
 
 	UPROPERTY(EditAnywhere)
 	TArray<FCargoManifestEntry> Cargo;

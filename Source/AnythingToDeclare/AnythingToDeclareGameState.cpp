@@ -5,14 +5,16 @@
 
 #include "AnythingToDeclareDeveloperSettings.h"
 #include "Day/DayDefinitionMap.h"
+#include "Request/CustomsRequestDataMap.h"
 #include "Loader.h"
 #include "Camera/CameraActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "Request/CustomsRequestGenerator.h"
 
 AAnythingToDeclareGameState::AAnythingToDeclareGameState(const FObjectInitializer& InInitializer)
 	: Super(InInitializer)
 	, DayNumber(1)
-	, CurrentCharacterCount(1)
+	, CurrentRequestCount(1)
 {
 }
 
@@ -25,7 +27,22 @@ void AAnythingToDeclareGameState::BeginPlay()
 		FLoader::Load<UDayDefinitionMap>(DeveloperSettings->DayDefinitionDataMap, [this](UDayDefinitionMap& InLoadedDataMap)
 	   {
 			DayDataMap = &InLoadedDataMap;
-			StartDay(1);
+			if(CustomsDataMap != nullptr)
+			{
+				StartDay(1);
+			}
+	   });
+	}
+
+	if(const UAnythingToDeclareDeveloperSettings* DeveloperSettings = UAnythingToDeclareDeveloperSettings::Get())
+	{
+		FLoader::Load<UCustomsRequestDataMap>(DeveloperSettings->CustomsDataMap, [this](UCustomsRequestDataMap& InLoadedDataMap)
+	   {
+			CustomsDataMap = &InLoadedDataMap;
+			if(DayDataMap != nullptr)
+			{
+				StartDay(1);
+			}
 	   });
 	}
 
@@ -45,7 +62,7 @@ void AAnythingToDeclareGameState::BeginPlay()
 void AAnythingToDeclareGameState::StartDay(const int32 InDayNumber)
 {
 	DayNumber = InDayNumber;
-	CurrentCharacterCount = 1;
+	CurrentRequestCount = 1;
 	if(DayDataMap != nullptr)
 	{
 		if(const UDayDefinitionAsset* DayDefinitionAsset = DayDataMap->FindDayNumber(InDayNumber))
@@ -70,6 +87,36 @@ void AAnythingToDeclareGameState::OnDayLoaded(const UDayDefinitionAsset* InDayAs
 
 void AAnythingToDeclareGameState::OnDayNotFound()
 {
+}
+
+void AAnythingToDeclareGameState::NextRequest()
+{
+	CurrentRequestCount++;
+	CurrentRequest = FCustomsRequest();
+	for(UCharacterAppearanceDataAsset* Appearance : CurrentDayDefinition->CharacterAppearances)
+	{
+		if(Appearance->CharacterPosition == CurrentRequestCount)
+		{
+			CurrentRequest.CharacterAppearance = Appearance;
+		}
+	}
+
+	CustomsRequestsHelper::GenerateRequest(CurrentRequest, CustomsDataMap, CurrentDayDefinition);
+	
+	// TODO: Temp code
+	for(TWeakObjectPtr<AGenericConsole> Console : Consoles)
+	{
+		if(const AGenericConsole* ConsolePtr = Console.Get())
+		{
+			if(const UWidgetComponent* WidgetComponent = ConsolePtr->GetScreenWidget())
+			{
+				if(UCargoManifestWidget* CargoManifestWidget = Cast<UCargoManifestWidget>(WidgetComponent->GetWidget()))
+				{
+					CargoManifestWidget->SetCargoManifest(CurrentRequest.CargoManifest);
+				}
+			}
+		}
+	}
 }
 
 AActor* AAnythingToDeclareGameState::CycleCameraNext()
@@ -147,6 +194,6 @@ AActor* AAnythingToDeclareGameState::CycleCameraPrev()
 		}
 		FocusedConsole = nullptr;
 	}
-	return PrimaryCameraActor;
+	return nullptr;
 }
 

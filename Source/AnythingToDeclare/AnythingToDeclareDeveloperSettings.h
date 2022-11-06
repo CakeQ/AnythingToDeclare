@@ -18,5 +18,8 @@ public:
 	UPROPERTY(EditAnywhere, config)
 	FSoftObjectPath DayDefinitionDataMap;
 
+	UPROPERTY(EditAnywhere, config)
+	FSoftObjectPath CustomsDataMap;
+
 	static UAnythingToDeclareDeveloperSettings* Get() { return GetMutableDefault<UAnythingToDeclareDeveloperSettings>(); }
 };

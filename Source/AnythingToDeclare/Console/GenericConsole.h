@@ -26,6 +26,7 @@ public:
 	int32 GetCameraOrder() const { return CameraOrder; };
 	
 	UCameraComponent* GetConsoleCamera() const { return CameraComponent; };
+	UWidgetComponent* GetScreenWidget() const { return ScreenWidget; };
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

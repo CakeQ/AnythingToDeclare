@@ -8,9 +8,11 @@
 #include "Day/DayDefinition.h"
 #include "Documents/Widgets/CargoManifestWidget.h"
 #include "GameFramework/GameStateBase.h"
+#include "Request/CustomsRequest.h"
 
 #include "AnythingToDeclareGameState.generated.h"
 
+class UCustomsRequestDataMap;
 class UDayDefinitionMap;
 class UDayDefinitionAsset;
 
@@ -32,7 +34,8 @@ public:
 	UFUNCTION()
 	void OnDayNotFound();
 
-	void SetPrimaryCameraActor(AActor* InActor);
+	UFUNCTION()
+	void NextRequest();
 	
 	UFUNCTION()
 	AActor* CycleCameraNext();
@@ -45,7 +48,7 @@ private:
 	int32 DayNumber;
 
 	UPROPERTY(VisibleAnywhere)
-	int32 CurrentCharacterCount;
+	int32 CurrentRequestCount;
 
 	int32 MaxCameraOrder;
 	
@@ -56,14 +59,20 @@ private:
 	UDayDefinitionMap* DayDataMap;
 
 	UPROPERTY()
-	TWeakObjectPtr<UCargoManifestWidget> CargoManifestWidget;
+	UCustomsRequestDataMap* CustomsDataMap;
 
-	UPROPERTY()
-	AActor* PrimaryCameraActor;
+	//UPROPERTY()
+	//TWeakObjectPtr<UCargoManifestWidget> CargoManifestWidget;
 
 	UPROPERTY()
 	TWeakObjectPtr<AGenericConsole> FocusedConsole;
 	
 	UPROPERTY()
 	TArray<TWeakObjectPtr<AGenericConsole>> Consoles;
+
+	UPROPERTY()
+	FCustomsRequest CurrentRequest;
+	
+	UPROPERTY()
+	TArray<FCustomsRequest> ProcessedRequests;
 };

@@ -14,12 +14,21 @@ class UCharacterDefinitionAsset : public UDataAsset
 public:
 	UPROPERTY(EditDefaultsOnly)
 	int32 Age;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 CryogenicAge;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FString Name;
 
 	UPROPERTY(EditDefaultsOnly)
+	FString Surname;
+	
+	UPROPERTY(EditDefaultsOnly)
 	FString CallSign;
+
+	UPROPERTY(EditDefaultsOnly)
+	FString ShipName;
 	
 	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftObjectPath Portrait;

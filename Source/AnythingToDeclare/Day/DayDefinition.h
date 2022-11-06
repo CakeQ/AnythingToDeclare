@@ -2,12 +2,14 @@
 
 #include "CoreMinimal.h"
 
-#include "../Character/CharacterModifier.h"
+#include "AnythingToDeclare/Request/CustomsRequestModifier.h"
 
 #include <Engine/DataAsset.h>
 
+#include "AnythingToDeclare/Request/CustomsRequestType.h"
 #include "DayDefinition.generated.h"
 
+class USubLocationDefinition;
 class UCharacterAppearanceDataAsset;
 
 UCLASS(Blueprintable)
@@ -21,10 +23,19 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	int32 DayNumber;
+	
+	UPROPERTY(EditDefaultsOnly)
+	USubLocationDefinition* WorkLocationOverride;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TMap<ECustomsRequestType, float> CustomsRequestTypeWeight;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TMap<ECustomsRequestModifier, float> CharacterModifiers;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<ECharacterModifier, float> CharacterModifiers;
-
+	TMap<int32, float> CargoManifestComplexityWeights;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCharacterAppearanceDataAsset*> CharacterAppearances;
 };
