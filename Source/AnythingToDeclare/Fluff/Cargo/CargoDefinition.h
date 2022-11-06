@@ -17,6 +17,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	float WeightMultiplierPerUnit;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ValuePerUnit;
 	
 	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftClassPath Icon;
