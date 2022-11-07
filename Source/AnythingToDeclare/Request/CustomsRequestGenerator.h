@@ -13,8 +13,7 @@ namespace CustomsRequestsHelper
 {
 	void GenerateRequest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition);
 	void GenerateCargoRoute(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition);
-	void GenerateCargoManifest(FCargoManifest& InManifest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition, const
-	                           USubLocationDefinition* Origin, const USubLocationDefinition* Destination);
+	void GenerateCargoManifest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition);
 	void GenerateCargoFromParameters(FCargoManifest& InManifest, const TMap<ECustomsRequestModifier, float>& RequestModifiers, const USubLocationDefinition*
 	                                 Origin, const USubLocationDefinition* Destination);
 	

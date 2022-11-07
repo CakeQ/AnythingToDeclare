@@ -6,6 +6,7 @@
 
 #include "CharacterDefinitionAsset.generated.h"
 
+class UFactionDefinition;
 UCLASS(Blueprintable)
 class UCharacterDefinitionAsset : public UDataAsset
 {
@@ -29,6 +30,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	FString ShipName;
+
+	UPROPERTY(EditDefaultsOnly)
+	UFactionDefinition* Faction;
 	
 	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftObjectPath Portrait;

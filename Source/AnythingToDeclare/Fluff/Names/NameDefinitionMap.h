@@ -29,11 +29,17 @@ class UNameDefinitionMap : public UDataAsset
 	
 public:
 	UPROPERTY(EditDefaultsOnly)
-	UDataTable* Names;
-	
-	UPROPERTY(EditDefaultsOnly)
 	TMap<int32, float> NameComplexityModifiers;
 
+	UPROPERTY(EditDefaultsOnly)
+	TMap<int32, float> CallSignComplexityModifiers;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TMap<int32, float> ShipNameComplexityModifiers;
+
+	UPROPERTY(EditDefaultsOnly)
+	UDataTable* Names;
+	
 	UPROPERTY(EditDefaultsOnly)
 	UDataTable* Surnames;
 
@@ -41,14 +47,8 @@ public:
 	UDataTable* CallSignWords;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<int32, float> CallSignComplexityModifiers;
-
-	UPROPERTY(EditDefaultsOnly)
 	UDataTable* ShipNamePrefixes;
 	
 	UPROPERTY(EditDefaultsOnly)
 	UDataTable* ShipNameWords;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TMap<int32, float> ShipNameComplexityModifiers;
 };

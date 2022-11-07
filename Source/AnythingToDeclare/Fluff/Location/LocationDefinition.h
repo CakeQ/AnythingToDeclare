@@ -14,6 +14,15 @@ class ULocationDefinition : public UDataAsset
 	GENERATED_BODY()
 	
 public:
+	ULocationDefinition()
+		: RandomlySelectable(true)
+		, PopularityModifier(1.0f)
+	{
+	}
+	
+	UPROPERTY(EditDefaultsOnly)
+	bool RandomlySelectable;
+	
 	UPROPERTY(EditDefaultsOnly)
 	float PopularityModifier;
 	

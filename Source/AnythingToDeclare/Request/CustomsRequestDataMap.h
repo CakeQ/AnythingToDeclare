@@ -9,6 +9,7 @@
 
 #include "CustomsRequestDataMap.generated.h"
 
+class UFactionDefinition;
 class UCargoTypeDefinition;
 class UDayDefinitionAsset;
 class ULocationDefinition;
@@ -34,6 +35,12 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCargoTypeDefinition*> CargoTypes;
 
+	UPROPERTY()
+	TArray<UCargoTypeDefinition*> SelectableCargoTypes;
+	
+	UPROPERTY()
+	TArray<UCargoTypeDefinition*> SelectableContrabandTypes;
+	
 	UPROPERTY(EditDefaultsOnly)
 	USubLocationDefinition* DefaultWorkLocation;
 	
@@ -43,6 +50,12 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<USubLocationDefinition*> SubLocations;
 
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UFactionDefinition*> Factions;
+	
+	UPROPERTY()
+	TMap<UFactionDefinition*, float> SelectableFactions;
+	
 	UPROPERTY()
 	TMap<ULocationDefinition*, float> LocationWeights;
 	

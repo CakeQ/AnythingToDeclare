@@ -9,6 +9,7 @@
 
 #include "CustomsRequest.generated.h"
 
+class UFactionDefinition;
 UENUM(BlueprintType)
 enum class ECustomsRequestOutcome : uint8
 {
@@ -28,6 +29,7 @@ public:
 		, CargoManifest()
 		, RequestType(ECustomsRequestType::None)
 		, Outcome(ECustomsRequestOutcome::Pending)
+		, Faction(nullptr)
 		, OriginLocation(nullptr)
 		, DestinationLocation(nullptr)
 	{};
@@ -47,6 +49,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	ECustomsRequestOutcome Outcome;
 
+	UPROPERTY(VisibleAnywhere)
+	UFactionDefinition* Faction;
+	
 	UPROPERTY(VisibleInstanceOnly)
 	USubLocationDefinition* OriginLocation;
 

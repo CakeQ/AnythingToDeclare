@@ -12,18 +12,26 @@ class UCargoTypeDefinition : public UDataAsset
 	GENERATED_BODY()
 	
 public:
+	UCargoTypeDefinition()
+		: RandomlySelectable(true)
+	{
+	}
+	
 	UPROPERTY(EditDefaultsOnly)
-	FString Name;
-
+	bool RandomlySelectable;
+	
+	UPROPERTY(EditDefaultsOnly)
+	bool IsIllegal;
+	
 	UPROPERTY(EditDefaultsOnly)
 	float WeightMultiplierPerUnit;
 
 	UPROPERTY(EditDefaultsOnly)
 	float ValuePerUnit;
 	
+	UPROPERTY(EditDefaultsOnly)
+	FString Name;
+
 	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftClassPath Icon;
-
-	UPROPERTY(EditDefaultsOnly)
-	bool IsIllegal;
 };

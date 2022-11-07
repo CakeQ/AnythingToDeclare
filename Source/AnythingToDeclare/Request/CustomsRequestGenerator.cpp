@@ -5,6 +5,7 @@
 #include "CustomsRequestDataMap.h"
 #include "AnythingToDeclare/Character/CharacterDefinitionAsset.h"
 #include "AnythingToDeclare/Day/DayDefinition.h"
+#include "AnythingToDeclare/Fluff/Faction/FactionDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/LocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Names/NameDefinitionMap.h"
@@ -20,8 +21,12 @@ namespace
 void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition)
 {
 	FillFromCharacterAppearance(InRequest);
+	if(InRequest.Faction == nullptr)
+	{
+		InRequest.Faction = RandomEntryWithWeight(InDataMap->SelectableFactions);
+	}
 	GenerateCargoRoute(InRequest, InDataMap, InDayDefinition);
-	GenerateCargoManifest(InRequest.CargoManifest, InDataMap, InDayDefinition, InRequest.OriginLocation, InRequest.DestinationLocation);
+	GenerateCargoManifest(InRequest, InDataMap, InDayDefinition);
 }
 
 void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap,
@@ -64,61 +69,66 @@ void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const
 	}
 }
 
-void CustomsRequestsHelper::GenerateCargoManifest(FCargoManifest& InManifest, const UCustomsRequestDataMap* InDataMap,
-                                                  const UDayDefinitionAsset* InDayDefinition, const USubLocationDefinition* Origin, const USubLocationDefinition* Destination)
+void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition)
 {
-	if(InManifest.ShipName.IsEmpty())
+	if(InRequest.CargoManifest.ShipName.IsEmpty())
 	{
-		const int32 ShipNameComplexity = RandomEntryWithWeight<int32>(InDataMap->Names->ShipNameComplexityModifiers);
-
-		const TArray<FName>& PrefixNames = InDataMap->Names->ShipNamePrefixes->GetRowNames();
-		const TArray<FName>& ShipNameWords = InDataMap->Names->ShipNameWords->GetRowNames();
+		const TMap<int32, float>& ShipNameComplexityListToUse = InRequest.Faction != nullptr && !InRequest.Faction->NameComplexityModifiers.IsEmpty() ?
+			InRequest.Faction->NameComplexityModifiers : InDataMap->Names->ShipNameComplexityModifiers;
+		const UDataTable* ShipNamePrefixTableToUse = InRequest.Faction != nullptr && InRequest.Faction->ShipNamePrefixes != nullptr ?
+			InRequest.Faction->ShipNamePrefixes : InDataMap->Names->ShipNamePrefixes;
+		const UDataTable* ShipNameTableToUse = InRequest.Faction != nullptr && InRequest.Faction->ShipNameWords != nullptr ?
+			InRequest.Faction->ShipNameWords : InDataMap->Names->ShipNameWords;
 		
-		const FNameDefinitionData* ChosenPrefix = InDataMap->Names->ShipNamePrefixes->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
-		InManifest.ShipName.Append(ChosenPrefix->Name.ToString());
+		const int32 ShipNameComplexity = RandomEntryWithWeight<int32>(ShipNameComplexityListToUse);
+
+		const TArray<FName>& PrefixNames = ShipNamePrefixTableToUse->GetRowNames();
+		const TArray<FName>& ShipNameWords = ShipNameTableToUse->GetRowNames();
+		
+		const FNameDefinitionData* ChosenPrefix = ShipNamePrefixTableToUse->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+		InRequest.CargoManifest.ShipName.Append(ChosenPrefix->Name.ToString());
 		for(int32 i = 0; i < ShipNameComplexity; i++)
 		{
-			if(!InManifest.ShipName.IsEmpty())
+			if(!InRequest.CargoManifest.ShipName.IsEmpty())
 			{
-				InManifest.ShipName.Append(TEXT(" "));
+				InRequest.CargoManifest.ShipName.Append(TEXT(" "));
 			}
 			
-			const FNameDefinitionData* ChosenWord = InDataMap->Names->ShipNameWords->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
-			const int32 NameIndex = FMath::RandRange(0, ShipNameWords.Num() - 1);
-			InManifest.ShipName.Append(ChosenWord->Name.ToString());
+			const FNameDefinitionData* ChosenWord = ShipNameTableToUse->FindRow<FNameDefinitionData>(ShipNameWords[FMath::RandRange(0, ShipNameWords.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+			InRequest.CargoManifest.ShipName.Append(ChosenWord->Name.ToString());
 		}
 	}
 
-	if(Origin != nullptr)
+	if(InRequest.OriginLocation != nullptr)
 	{
-		InManifest.OriginSubLocation = Origin->Name;
-		if(ULocationDefinition* LocationDefinition = Origin->Location)
+		InRequest.CargoManifest.OriginSubLocation = InRequest.OriginLocation->Name;
+		if(ULocationDefinition* LocationDefinition = InRequest.OriginLocation->Location)
 		{
-			InManifest.OriginLocation = LocationDefinition->Name;
+			InRequest.CargoManifest.OriginLocation = LocationDefinition->Name;
 		}
 	}
 
-	if(Destination != nullptr)
+	if(InRequest.DestinationLocation != nullptr)
 	{
-		InManifest.DestinationSubLocation = Destination->Name;
-		if(ULocationDefinition* LocationDefinition = Destination->Location)
+		InRequest.CargoManifest.DestinationSubLocation = InRequest.DestinationLocation->Name;
+		if(ULocationDefinition* LocationDefinition = InRequest.DestinationLocation->Location)
 		{
-			InManifest.DestinationLocation = LocationDefinition->Name;
+			InRequest.CargoManifest.DestinationLocation = LocationDefinition->Name;
 		}
 	}
 
 	TArray<UCargoTypeDefinition*> MutualCargoTypes;
 
-	for(UCargoTypeDefinition* DemandedCargoType : Origin->DemandedCargoTypes)
+	for(UCargoTypeDefinition* DemandedCargoType : InRequest.OriginLocation->DemandedCargoTypes)
 	{
-		if(Destination->SuppliedCargoTypes.Contains(DemandedCargoType))
+		if(InRequest.DestinationLocation->SuppliedCargoTypes.Contains(DemandedCargoType))
 		{
 			MutualCargoTypes.AddUnique(DemandedCargoType);
 		}
 	}
-	for(UCargoTypeDefinition* SuppliedCargoType : Origin->SuppliedCargoTypes)
+	for(UCargoTypeDefinition* SuppliedCargoType : InRequest.OriginLocation->SuppliedCargoTypes)
 	{
-		if(Destination->SuppliedCargoTypes.Contains(SuppliedCargoType))
+		if(InRequest.DestinationLocation->SuppliedCargoTypes.Contains(SuppliedCargoType))
 		{
 			MutualCargoTypes.AddUnique(SuppliedCargoType);
 		}
@@ -140,7 +150,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCargoManifest& InManifest, co
 			UCargoTypeDefinition* ChosenCargoType = MutualCargoTypes[PickedIndex];
 			if(int32 UnitsChosen = FMath::RandRange(1, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
 			{
-				InManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
+				InRequest.CargoManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
 				RemainingWeight -= UnitsChosen * ChosenCargoType->WeightMultiplierPerUnit;
 				UnitsLeft -= UnitsChosen;
 				continue;
@@ -151,7 +161,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCargoManifest& InManifest, co
 		UCargoTypeDefinition* ChosenCargoType = InDataMap->CargoTypes[PickedIndex];
 		if(int32 UnitsChosen = FMath::RandRange(1, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
 		{
-			InManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
+			InRequest.CargoManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
 			RemainingWeight -= UnitsChosen * ChosenCargoType->WeightMultiplierPerUnit;
 			UnitsLeft -= UnitsChosen;
 			continue;
@@ -173,6 +183,7 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 	{
 		InRequest.CargoManifest.ShipName = InRequest.CharacterAppearance->Character->ShipName;
 		InRequest.RequestType = InRequest.CharacterAppearance->CustomsRequestType;
+		InRequest.Faction = InRequest.CharacterAppearance->Character->Faction;
 		
 		if(USubLocationDefinition* SubLocationDefinition = InRequest.CharacterAppearance->OriginLocation)
 		{
