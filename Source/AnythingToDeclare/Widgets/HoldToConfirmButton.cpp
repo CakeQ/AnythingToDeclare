@@ -16,7 +16,7 @@ void UHoldToConfirmButton::NativeTick(const FGeometry& MyGeometry, float InDelta
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	if(ButtonWidget != nullptr)
 	{
-		if(ButtonWidget->IsPressed() && !HasConfirmed)
+		if(ButtonWidget->IsPressed())
 		{
 			ProgressedTime += InDeltaTime;
 			if(ProgressBar != nullptr)
@@ -24,7 +24,7 @@ void UHoldToConfirmButton::NativeTick(const FGeometry& MyGeometry, float InDelta
 				ProgressBar->SetPercent(FMath::Min(ProgressedTime / ConfirmTime, 1.0f));
 			}
 			
-			if(ProgressedTime >= ConfirmTime)
+			if(ProgressedTime >= ConfirmTime && !HasConfirmed)
 			{
 				FireOnConfirmed();
 			}
@@ -42,7 +42,7 @@ void UHoldToConfirmButton::CancelConfirm()
 	ProgressedTime = 0.0f;
 	if(ProgressBar != nullptr)
 	{
-		ProgressBar->SetPercent(ProgressedTime / ConfirmTime);
+		ProgressBar->SetPercent(0.0f);
 	}
 }
 
@@ -50,4 +50,8 @@ void UHoldToConfirmButton::FireOnConfirmed()
 {
 	OnConfirmed.Broadcast();
 	HasConfirmed = true;
+	if(ProgressBar != nullptr)
+	{
+		ProgressBar->SetPercent(0.0f);
+	}
 }
