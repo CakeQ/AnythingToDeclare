@@ -19,6 +19,7 @@ public:
 	UFactionDefinition()
 		: RandomlySelectable(true)
 		, OnlyCarryPreferredCargo(false)
+		, ShowInCodex(true)
 		, AppearanceWeight(1.0f)
 	{
 	}
@@ -30,11 +31,17 @@ public:
 	bool OnlyCarryPreferredCargo;
 
 	UPROPERTY(EditDefaultsOnly)
+	bool ShowInCodex;
+	
+	UPROPERTY(EditDefaultsOnly)
 	float AppearanceWeight;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FString Name;
 
+	UPROPERTY(EditDefaultsOnly)
+	FString Description;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCargoTypeDefinition*> CargoTypes;
 	

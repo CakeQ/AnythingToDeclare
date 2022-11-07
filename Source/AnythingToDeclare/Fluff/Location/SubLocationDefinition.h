@@ -17,6 +17,7 @@ class USubLocationDefinition : public UDataAsset
 public:
 	USubLocationDefinition()
 		: RandomlySelectable(true)
+		, ShowInCodex(true)
 		, PopularityModifier(1.0f)
 	{
 	}
@@ -25,11 +26,17 @@ public:
 	bool RandomlySelectable;
 	
 	UPROPERTY(EditDefaultsOnly)
+	bool ShowInCodex;
+	
+	UPROPERTY(EditDefaultsOnly)
 	float PopularityModifier;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FString Name;
 
+	UPROPERTY(EditDefaultsOnly)
+	FString Description;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCargoTypeDefinition*> SuppliedCargoTypes;
 

@@ -16,6 +16,7 @@ class ULocationDefinition : public UDataAsset
 public:
 	ULocationDefinition()
 		: RandomlySelectable(true)
+		, ShowInCodex(true)
 		, PopularityModifier(1.0f)
 	{
 	}
@@ -24,11 +25,17 @@ public:
 	bool RandomlySelectable;
 	
 	UPROPERTY(EditDefaultsOnly)
+	bool ShowInCodex;
+	
+	UPROPERTY(EditDefaultsOnly)
 	float PopularityModifier;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FString Name;
 
+	UPROPERTY(EditDefaultsOnly)
+	FString Description;
+	
 	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftClassPath Icon;
 };
