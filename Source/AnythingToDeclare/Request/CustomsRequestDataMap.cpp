@@ -47,7 +47,7 @@ void UCustomsRequestDataMap::PostLoad()
 		if(LocationDefinition->RandomlySelectable)
 		{
 			LocationWeights.Add(LocationDefinition, 
-				LocationDefinition->PopularityModifier + (LocationDefinition->Region == nullptr ? LocationDefinition->Region->PopularityModifier : 0.0f));
+				LocationDefinition->PopularityModifier + (LocationDefinition->Region != nullptr ? LocationDefinition->Region->PopularityModifier : 0.0f));
 		}
 	}
 	
@@ -57,8 +57,8 @@ void UCustomsRequestDataMap::PostLoad()
 		{
 			SubLocationWeights.Add(SubLocationDefinition,
 				SubLocationDefinition->PopularityModifier
-				+ (SubLocationDefinition->Location == nullptr ? SubLocationDefinition->Location->PopularityModifier
-					+ (SubLocationDefinition->Location->Region == nullptr ? SubLocationDefinition->Location->Region->PopularityModifier : 0.0f) : 0.0f));
+				+ (SubLocationDefinition->Location != nullptr ? SubLocationDefinition->Location->PopularityModifier
+					+ (SubLocationDefinition->Location->Region != nullptr ? SubLocationDefinition->Location->Region->PopularityModifier : 0.0f) : 0.0f));
 		}
 	}
 	
