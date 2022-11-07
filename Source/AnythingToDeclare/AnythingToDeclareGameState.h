@@ -12,6 +12,7 @@
 
 #include "AnythingToDeclareGameState.generated.h"
 
+class UCustomsRequestMonitorWidget;
 class UCustomsRequestDataMap;
 class UDayDefinitionMap;
 class UDayDefinitionAsset;
@@ -61,8 +62,8 @@ private:
 	UPROPERTY()
 	UCustomsRequestDataMap* CustomsDataMap;
 
-	//UPROPERTY()
-	//TWeakObjectPtr<UCargoManifestWidget> CargoManifestWidget;
+	UPROPERTY()
+	TWeakObjectPtr<UCustomsRequestMonitorWidget> CachedRequestMonitorWidget;
 
 	UPROPERTY()
 	TWeakObjectPtr<AGenericConsole> FocusedConsole;

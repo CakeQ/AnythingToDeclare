@@ -10,6 +10,7 @@
 #include "Camera/CameraActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Request/CustomsRequestGenerator.h"
+#include "Widgets/CustomsRequestMonitorWidget.h"
 
 AAnythingToDeclareGameState::AAnythingToDeclareGameState(const FObjectInitializer& InInitializer)
 	: Super(InInitializer)
@@ -54,6 +55,14 @@ void AAnythingToDeclareGameState::BeginPlay()
 		{
 			MaxCameraOrder = ConsolePtr->GetCameraOrder() > MaxCameraOrder ? ConsolePtr->GetCameraOrder() : MaxCameraOrder;
 			Consoles.Add(ConsolePtr);
+			
+			if(const UWidgetComponent* WidgetComponent = ConsolePtr->GetScreenWidget())
+			{
+				if(UCustomsRequestMonitorWidget* RequestMonitorWidget = Cast<UCustomsRequestMonitorWidget>(WidgetComponent->GetWidget()))
+				{
+					CachedRequestMonitorWidget = RequestMonitorWidget;
+				}
+			}
 		}
 	}
 }
@@ -102,19 +111,11 @@ void AAnythingToDeclareGameState::NextRequest()
 	}
 
 	CustomsRequestsHelper::GenerateRequest(CurrentRequest, CustomsDataMap, CurrentDayDefinition);
-	
-	// TODO: Temp code
-	for(TWeakObjectPtr<AGenericConsole> Console : Consoles)
+	if(const UCustomsRequestMonitorWidget* RequestMonitorWidget = CachedRequestMonitorWidget.Get())
 	{
-		if(const AGenericConsole* ConsolePtr = Console.Get())
+		if(RequestMonitorWidget->ManifestWidget != nullptr)
 		{
-			if(const UWidgetComponent* WidgetComponent = ConsolePtr->GetScreenWidget())
-			{
-				if(UCargoManifestWidget* CargoManifestWidget = Cast<UCargoManifestWidget>(WidgetComponent->GetWidget()))
-				{
-					CargoManifestWidget->SetCargoManifest(CurrentRequest.CargoManifest);
-				}
-			}
+			RequestMonitorWidget->ManifestWidget->SetCargoManifest(CurrentRequest.CargoManifest);
 		}
 	}
 }
