@@ -38,7 +38,7 @@ void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
 		{
 			UCargoManifestEntryWidget* NewEntry = CreateWidget<UCargoManifestEntryWidget>(this, CargoManifestEntryWidgetClass);
 			NewEntry->SetCargoManifestEntry(Entry);
-			CargoManifestEntries->AddChildToVerticalBox(NewEntry);
+			CargoManifestEntries->AddChild(NewEntry);
 		}
 	}
 }

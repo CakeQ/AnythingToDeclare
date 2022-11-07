@@ -2,9 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "AnythingToDeclare/Documents/CargoManifest.h"
+#include "Components/ScrollBox.h"
 
 #include "UMG/Public/Blueprint/UserWidget.h"
-#include "UMG/Public/Components/Verticalbox.h"
 
 #include "CargoManifestWidget.generated.h"
 
@@ -36,7 +36,7 @@ protected:
 	UTextBlock* DestinationSubLocation;
 
 	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* CargoManifestEntries;
+	UScrollBox* CargoManifestEntries;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCargoManifestEntryWidget> CargoManifestEntryWidgetClass;
