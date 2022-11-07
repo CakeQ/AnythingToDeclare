@@ -9,6 +9,7 @@
 
 #include "CharacterAppearanceDataAsset.generated.h"
 
+class UDataTable;
 enum class ECustomsRequestType : uint8;
 class UCharacterDefinitionAsset;
 class USubLocationDefinition;
@@ -28,9 +29,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<ECustomsRequestModifier, float> CharacterModifiers;
 
-	// UPROPERTY()
-	// TArray<FDialogueData> DialogueOptions;
-	
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag TagOnApprove;
 
@@ -48,4 +46,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	USubLocationDefinition* DestinationLocation;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UDataTable* Dialogue;
 };

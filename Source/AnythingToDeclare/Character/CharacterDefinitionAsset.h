@@ -6,6 +6,7 @@
 
 #include "CharacterDefinitionAsset.generated.h"
 
+class UShipClassDefinition;
 class UFactionDefinition;
 UCLASS(Blueprintable)
 class UCharacterDefinitionAsset : public UDataAsset
@@ -31,6 +32,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FString ShipName;
 
+	UPROPERTY(EditDefaultsOnly)
+	UShipClassDefinition* ShipClass;
+	
 	UPROPERTY(EditDefaultsOnly)
 	UFactionDefinition* Faction;
 	

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 
 #include "AnythingToDeclare/Fluff/Cargo/CargoDefinition.h"
+#include "AnythingToDeclare/Fluff/Ship/ShipClassDefinition.h"
 
 #include <Engine/DataAsset.h>
 
@@ -44,6 +45,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCargoTypeDefinition*> CargoTypes;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UShipClassDefinition*> ShipClasses;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TMap<int32, float> NameComplexityModifiers;

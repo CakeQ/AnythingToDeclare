@@ -69,4 +69,12 @@ void UCustomsRequestDataMap::PostLoad()
 			SelectableFactions.Add(FactionDefinition, FactionDefinition->AppearanceWeight);
 		}
 	}
+	
+	for(UShipClassDefinition* ShipClassDefinition : ShipClasses)
+	{
+		if(ShipClassDefinition->RandomlySelectable)
+		{
+			SelectableShipClasses.Add(ShipClassDefinition, ShipClassDefinition->AppearanceWeight);
+		}
+	}
 }

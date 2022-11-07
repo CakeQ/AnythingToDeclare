@@ -9,6 +9,8 @@
 
 #include "CustomsRequestDataMap.generated.h"
 
+class UShipClassDefinition;
+class UDataTable;
 class URegionDefinition;
 class UFactionDefinition;
 class UCargoTypeDefinition;
@@ -46,6 +48,9 @@ public:
 	USubLocationDefinition* DefaultWorkLocation;
 	
 	UPROPERTY(EditDefaultsOnly)
+	UDataTable* DefaultDialogue;
+	
+	UPROPERTY(EditDefaultsOnly)
 	TArray<URegionDefinition*> Regions;
 	
 	UPROPERTY(EditDefaultsOnly)
@@ -56,9 +61,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UFactionDefinition*> Factions;
-	
-	UPROPERTY()
-	TMap<UFactionDefinition*, float> SelectableFactions;
+
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UShipClassDefinition*> ShipClasses;
 	
 	UPROPERTY()
 	TMap<URegionDefinition*, float> RegionWeights;
@@ -68,4 +73,10 @@ public:
 	
 	UPROPERTY()
 	TMap<USubLocationDefinition*, float> SubLocationWeights;
+	
+	UPROPERTY()
+	TMap<UFactionDefinition*, float> SelectableFactions;
+	
+	UPROPERTY()
+	TMap<UShipClassDefinition*, float> SelectableShipClasses;
 };
