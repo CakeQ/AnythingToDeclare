@@ -33,6 +33,11 @@ public:
 		, OriginLocation(nullptr)
 		, DestinationLocation(nullptr)
 	{};
+
+	bool IsValid()
+	{
+		return RequestType != ECustomsRequestType::None;
+	};
 	
 	UPROPERTY(VisibleAnywhere)
 	UCharacterAppearanceDataAsset* CharacterAppearance;
@@ -56,5 +61,5 @@ public:
 	USubLocationDefinition* OriginLocation;
 
 	UPROPERTY(VisibleInstanceOnly)
-	USubLocationDefinition* DestinationLocation;	
+	USubLocationDefinition* DestinationLocation;
 };

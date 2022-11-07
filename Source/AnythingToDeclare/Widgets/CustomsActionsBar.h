@@ -19,7 +19,6 @@ class ANYTHINGTODECLARE_API UCustomsActionsBar : public UUserWidget
 public:
 	UCustomsActionsBar(const FObjectInitializer& ObjectInitializer);
 
-private:
 	UPROPERTY(meta = (BindWidget))
 	UHoldToConfirmButton* AllowButton;
 	

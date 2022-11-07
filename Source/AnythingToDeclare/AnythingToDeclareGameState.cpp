@@ -61,6 +61,21 @@ void AAnythingToDeclareGameState::BeginPlay()
 				if(UCustomsRequestMonitorWidget* RequestMonitorWidget = Cast<UCustomsRequestMonitorWidget>(WidgetComponent->GetWidget()))
 				{
 					CachedRequestMonitorWidget = RequestMonitorWidget;
+					if(const UCustomsActionsBar* ActionBar = RequestMonitorWidget->ActionBar)
+					{
+						if(ActionBar->AllowButton != nullptr)
+						{
+							ActionBar->AllowButton->OnConfirmed.AddDynamic(this, &AAnythingToDeclareGameState::OnRequestApproved);
+						}
+						if(ActionBar->DenyButton != nullptr)
+						{
+							ActionBar->DenyButton->OnConfirmed.AddDynamic(this, &AAnythingToDeclareGameState::OnRequestDenied);
+						}
+						if(ActionBar->QuestionButton != nullptr)
+						{
+							ActionBar->QuestionButton->OnReleased.AddDynamic(this, &AAnythingToDeclareGameState::OnQuestioned);
+						}
+					}
 				}
 			}
 		}
@@ -118,6 +133,30 @@ void AAnythingToDeclareGameState::NextRequest()
 			RequestMonitorWidget->ManifestWidget->SetCargoManifest(CurrentRequest.CargoManifest);
 		}
 	}
+}
+
+void AAnythingToDeclareGameState::OnRequestApproved()
+{
+	HandleRequest(ECustomsRequestOutcome::Approved);
+}
+
+void AAnythingToDeclareGameState::OnRequestDenied()
+{
+	HandleRequest(ECustomsRequestOutcome::Denied);
+}
+
+void AAnythingToDeclareGameState::OnQuestioned()
+{
+}
+
+void AAnythingToDeclareGameState::HandleRequest(const ECustomsRequestOutcome& InOutcome)
+{
+	if(CurrentRequest.IsValid())
+	{
+		CurrentRequest.Outcome = InOutcome;
+		ProcessedRequests.Add(CurrentRequest);
+	}
+	NextRequest();
 }
 
 AActor* AAnythingToDeclareGameState::CycleCameraNext()

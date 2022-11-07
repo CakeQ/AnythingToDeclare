@@ -16,7 +16,7 @@ void UHoldToConfirmButton::NativeTick(const FGeometry& MyGeometry, float InDelta
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	if(ButtonWidget != nullptr)
 	{
-		if(ButtonWidget->IsPressed())
+		if(ButtonWidget->IsPressed() && !HasConfirmed)
 		{
 			ProgressedTime += InDeltaTime;
 			if(ProgressBar != nullptr)

@@ -37,6 +37,15 @@ public:
 
 	UFUNCTION()
 	void NextRequest();
+
+	UFUNCTION()
+	void OnRequestApproved();
+
+	UFUNCTION()
+	void OnRequestDenied();
+
+	UFUNCTION()
+	void OnQuestioned();
 	
 	UFUNCTION()
 	AActor* CycleCameraNext();
@@ -45,6 +54,9 @@ public:
 	AActor* CycleCameraPrev();
 	
 private:
+	UFUNCTION()
+	void HandleRequest(const ECustomsRequestOutcome& InOutcome);
+	
 	UPROPERTY(VisibleAnywhere)
 	int32 DayNumber;
 
