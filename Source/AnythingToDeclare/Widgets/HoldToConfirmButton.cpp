@@ -5,6 +5,7 @@
 
 UHoldToConfirmButton::UHoldToConfirmButton(const FObjectInitializer& InInitialiser)
 	: Super(InInitialiser)
+	, ResetOnConfirm(true)
 	, HasConfirmed(false)
 	, ConfirmTime(2.0f)
 	, ProgressedTime(0.0f)
@@ -52,7 +53,7 @@ void UHoldToConfirmButton::FireOnConfirmed()
 {
 	OnConfirmed.Broadcast();
 	HasConfirmed = true;
-	if(ProgressBar != nullptr)
+	if(ProgressBar != nullptr && ResetOnConfirm)
 	{
 		ProgressBar->SetPercent(0.0f);
 	}
