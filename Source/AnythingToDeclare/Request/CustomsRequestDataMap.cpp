@@ -5,6 +5,7 @@
 #include "AnythingToDeclare/Fluff/Cargo/CargoDefinition.h"
 #include "AnythingToDeclare/Fluff/Faction/FactionDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/LocationDefinition.h"
+#include "AnythingToDeclare/Fluff/Location/RegionDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
 
 UCustomsRequestDataMap::UCustomsRequestDataMap()
@@ -36,11 +37,17 @@ void UCustomsRequestDataMap::PostLoad()
 		}
 	}
 	
+	for(URegionDefinition* RegionDefinition : Regions)
+	{
+		RegionWeights.Add(RegionDefinition, RegionDefinition->PopularityModifier);
+	}
+	
 	for(ULocationDefinition* LocationDefinition : Locations)
 	{
 		if(LocationDefinition->RandomlySelectable)
 		{
-			LocationWeights.Add(LocationDefinition, LocationDefinition->PopularityModifier);
+			LocationWeights.Add(LocationDefinition, 
+				LocationDefinition->PopularityModifier + (LocationDefinition->Region == nullptr ? LocationDefinition->Region->PopularityModifier : 0.0f));
 		}
 	}
 	
@@ -48,7 +55,10 @@ void UCustomsRequestDataMap::PostLoad()
 	{
 		if(SubLocationDefinition->RandomlySelectable)
 		{
-			SubLocationWeights.Add(SubLocationDefinition, SubLocationDefinition->PopularityModifier + (SubLocationDefinition->Location == nullptr ? SubLocationDefinition->Location->PopularityModifier : 0.0f));
+			SubLocationWeights.Add(SubLocationDefinition,
+				SubLocationDefinition->PopularityModifier
+				+ (SubLocationDefinition->Location == nullptr ? SubLocationDefinition->Location->PopularityModifier
+					+ (SubLocationDefinition->Location->Region == nullptr ? SubLocationDefinition->Location->Region->PopularityModifier : 0.0f) : 0.0f));
 		}
 	}
 	

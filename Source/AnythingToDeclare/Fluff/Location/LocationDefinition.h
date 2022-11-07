@@ -6,6 +6,7 @@
 
 #include "LocationDefinition.generated.h"
 
+class URegionDefinition;
 class UCargoTypeDefinition;
 
 UCLASS(Blueprintable)
@@ -38,4 +39,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftClassPath Icon;
+	
+	UPROPERTY(EditDefaultsOnly)
+	URegionDefinition* Region;
 };
