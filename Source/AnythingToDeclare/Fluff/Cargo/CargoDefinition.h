@@ -6,6 +6,8 @@
 
 #include "CargoDefinition.generated.h"
 
+class UCargoCategoryDefinition;
+
 UCLASS(Blueprintable)
 class UCargoTypeDefinition : public UDataAsset
 {
@@ -15,6 +17,7 @@ public:
 	UCargoTypeDefinition()
 		: RandomlySelectable(true)
 		, ShowInCodex(true)
+		, SelectionWeight(1.0f)
 	{
 	}
 	
@@ -28,6 +31,9 @@ public:
 	bool IsIllegal;
 	
 	UPROPERTY(EditDefaultsOnly)
+	float SelectionWeight;
+	
+	UPROPERTY(EditDefaultsOnly)
 	float WeightMultiplierPerUnit;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -38,6 +44,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	FString Description;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UCargoCategoryDefinition* Category;
 	
 	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
 	FSoftClassPath Icon;
