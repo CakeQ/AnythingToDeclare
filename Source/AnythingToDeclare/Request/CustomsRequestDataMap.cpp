@@ -35,7 +35,7 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 	
 	for(UCargoTypeDefinition* CargoTypeDefinition : CargoTypes)
 	{
-		if(CargoTypeDefinition->RandomlySelectable)
+		if(CargoTypeDefinition != nullptr && CargoTypeDefinition->RandomlySelectable)
 		{
 			if(CargoTypeDefinition->IsIllegal)
 			{
@@ -50,12 +50,15 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 	
 	for(URegionDefinition* RegionDefinition : Regions)
 	{
-		RegionWeights.Add(RegionDefinition, RegionDefinition->PopularityModifier);
+		if(RegionDefinition != nullptr)
+		{
+			RegionWeights.Add(RegionDefinition, RegionDefinition->PopularityModifier);
+		}
 	}
 	
 	for(ULocationDefinition* LocationDefinition : Locations)
 	{
-		if(LocationDefinition->RandomlySelectable)
+		if(LocationDefinition != nullptr && LocationDefinition->RandomlySelectable)
 		{
 			LocationWeights.Add(LocationDefinition, 
 				LocationDefinition->PopularityModifier + (LocationDefinition->Region != nullptr ? LocationDefinition->Region->PopularityModifier : 0.0f));
@@ -64,7 +67,7 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 	
 	for(USubLocationDefinition* SubLocationDefinition : SubLocations)
 	{
-		if(SubLocationDefinition->RandomlySelectable)
+		if(SubLocationDefinition != nullptr && SubLocationDefinition->RandomlySelectable)
 		{
 			SubLocationWeights.Add(SubLocationDefinition,
 				SubLocationDefinition->PopularityModifier
@@ -75,7 +78,7 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 	
 	for(UFactionDefinition* FactionDefinition : Factions)
 	{
-		if(FactionDefinition->RandomlySelectable)
+		if(FactionDefinition != nullptr && FactionDefinition->RandomlySelectable)
 		{
 			SelectableFactions.Add(FactionDefinition, FactionDefinition->AppearanceWeight);
 		}
@@ -83,7 +86,7 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 	
 	for(UShipClassDefinition* ShipClassDefinition : ShipClasses)
 	{
-		if(ShipClassDefinition->RandomlySelectable)
+		if(ShipClassDefinition != nullptr && ShipClassDefinition->RandomlySelectable)
 		{
 			SelectableShipClasses.Add(ShipClassDefinition, ShipClassDefinition->AppearanceWeight);
 		}
