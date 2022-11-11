@@ -37,6 +37,7 @@ void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UC
 void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap,
 	const UDayDefinitionAsset* InDayDefinition)
 {
+	USubLocationDefinition* WorkLocation = InDayDefinition->WorkLocationOverride != nullptr ? InDayDefinition->WorkLocationOverride : InDataMap->DefaultWorkLocation;
 	if(InRequest.RequestType == ECustomsRequestType::None)
 	{
 		InRequest.RequestType = RandomEntryWithWeight(InDayDefinition->CustomsRequestTypeWeight);
@@ -47,20 +48,25 @@ void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const
 	{
 		if(InRequest.RequestType == ECustomsRequestType::Outbound)
 		{
-			InRequest.OriginLocation = InDayDefinition->WorkLocationOverride != nullptr ? InDayDefinition->WorkLocationOverride : InDataMap->DefaultWorkLocation;
+			InRequest.OriginLocation = WorkLocation;
 		}
 		else
 		{
-			InRequest.OriginLocation = RandomEntryWithWeight(InDataMap->SubLocationWeights);
+			AlreadyUsedLocations.Add(WorkLocation);
+			InRequest.OriginLocation = RandomEntryWithWeight(InDataMap->SubLocationWeights, AlreadyUsedLocations);
 		}
 		AlreadyUsedLocations.Add(InRequest.OriginLocation);
+		if(InRequest.RequestType == ECustomsRequestType::Transfer)
+		{
+			AlreadyUsedLocations.Append(InDataMap->SubLocations.FilterByPredicate([OriginLocation = InRequest.OriginLocation](const USubLocationDefinition* Iterator){ return OriginLocation-> Location != nullptr && Iterator->Location == OriginLocation->Location;}));
+		}
 	}
 
 	if(InRequest.DestinationLocation == nullptr)
 	{
 		if(InRequest.RequestType == ECustomsRequestType::Inbound)
 		{
-			InRequest.DestinationLocation = InDayDefinition->WorkLocationOverride != nullptr ? InDayDefinition->WorkLocationOverride : InDataMap->DefaultWorkLocation;
+			InRequest.DestinationLocation = WorkLocation;
 		}
 		else
 		{
