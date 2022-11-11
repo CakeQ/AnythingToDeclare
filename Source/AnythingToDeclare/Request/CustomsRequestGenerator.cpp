@@ -5,6 +5,7 @@
 #include "CustomsRequestDataMap.h"
 #include "AnythingToDeclare/Character/CharacterDefinitionAsset.h"
 #include "AnythingToDeclare/Day/DayDefinition.h"
+#include "AnythingToDeclare/Fluff/Cargo/CargoCategoryDefinition.h"
 #include "AnythingToDeclare/Fluff/Faction/FactionDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/LocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
@@ -21,6 +22,10 @@ namespace
 void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition)
 {
 	FillFromCharacterAppearance(InRequest);
+	if(InRequest.Ship == nullptr)
+	{
+		InRequest.Ship = RandomEntryWithWeight(InDataMap->SelectableShipClasses);
+	}
 	if(InRequest.Faction == nullptr)
 	{
 		InRequest.Faction = RandomEntryWithWeight(InDataMap->SelectableFactions);
@@ -37,24 +42,20 @@ void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const
 		InRequest.RequestType = RandomEntryWithWeight(InDayDefinition->CustomsRequestTypeWeight);
 	}
 
+	TArray<USubLocationDefinition*> AlreadyUsedLocations;
 	if(InRequest.OriginLocation == nullptr)
 	{
-		switch(InRequest.RequestType)
+		if(InRequest.RequestType == ECustomsRequestType::Outbound)
 		{
-		case ECustomsRequestType::Outbound:
 			InRequest.OriginLocation = InDayDefinition->WorkLocationOverride != nullptr ? InDayDefinition->WorkLocationOverride : InDataMap->DefaultWorkLocation;
-			break;
-		case ECustomsRequestType::Inbound:
-			// TODO: Add more complex way of potentially picking an origin that supplies destination demanded cargo if inbound
-			InRequest.OriginLocation = RandomEntryWithWeight(InDataMap->SubLocationWeights);
-			break;
-		default:
-			InRequest.OriginLocation = RandomEntryWithWeight(InDataMap->SubLocationWeights);
-			break;
 		}
+		else
+		{
+			InRequest.OriginLocation = RandomEntryWithWeight(InDataMap->SubLocationWeights);
+		}
+		AlreadyUsedLocations.Add(InRequest.OriginLocation);
 	}
 
-	// TODO: Dont allow same as origin
 	if(InRequest.DestinationLocation == nullptr)
 	{
 		if(InRequest.RequestType == ECustomsRequestType::Inbound)
@@ -63,8 +64,32 @@ void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const
 		}
 		else
 		{
-			// TODO: Add more complex way of potentially picking a destination that demands origin supplied cargo
-			InRequest.DestinationLocation = RandomEntryWithWeight(InDataMap->SubLocationWeights);
+			if(FMath::RandBool() && InRequest.OriginLocation != nullptr && !InRequest.OriginLocation->SuppliedCargoTypes.IsEmpty())
+			{
+				TMap<USubLocationDefinition*, float> MutuallyBeneficialLocations;
+				for(const TPair<USubLocationDefinition*, float>& Location : InDataMap->SubLocationWeights)
+				{
+					if(Location.Key != nullptr)
+					{
+						for(UCargoTypeDefinition* CargoType : Location.Key->DemandedCargoTypes)
+						{
+							if(InRequest.OriginLocation->SuppliedCargoTypes.Contains(CargoType))
+							{
+								MutuallyBeneficialLocations.Add(Location);
+								break;
+							}
+						}
+					}
+				}
+				if(!MutuallyBeneficialLocations.IsEmpty())
+				{
+					InRequest.DestinationLocation = RandomEntryWithWeight(MutuallyBeneficialLocations, AlreadyUsedLocations);
+				}
+			}
+			if(InRequest.DestinationLocation == nullptr)
+			{
+				InRequest.DestinationLocation = RandomEntryWithWeight(InDataMap->SubLocationWeights, AlreadyUsedLocations);
+			}
 		}
 	}
 }
@@ -117,54 +142,49 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 		}
 	}
 
-	TArray<UCargoTypeDefinition*> MutualCargoTypes;
-
-	for(UCargoTypeDefinition* DemandedCargoType : InRequest.OriginLocation->DemandedCargoTypes)
-	{
-		if(InRequest.DestinationLocation->SuppliedCargoTypes.Contains(DemandedCargoType))
-		{
-			MutualCargoTypes.AddUnique(DemandedCargoType);
-		}
-	}
+	TMap<UCargoTypeDefinition*, float> MutualCargoTypes;
 	for(UCargoTypeDefinition* SuppliedCargoType : InRequest.OriginLocation->SuppliedCargoTypes)
 	{
 		if(InRequest.DestinationLocation->SuppliedCargoTypes.Contains(SuppliedCargoType))
 		{
-			MutualCargoTypes.AddUnique(SuppliedCargoType);
+			MutualCargoTypes.Add(SuppliedCargoType, SuppliedCargoType->SelectionWeight + (SuppliedCargoType->Category != nullptr ? SuppliedCargoType->Category->SelectionWeight : 0.0f));
 		}
 	}
 
 	const int32 CargoComplexity = RandomEntryWithWeight(InDayDefinition->CargoManifestComplexityWeights);
 	
-	// TODO: Remove magic number
-	float RemainingWeight = 1000.0f;
-	int32 UnitsLeft = 100;
+	float RemainingWeight = InRequest.Ship->MaximumWeight;
+	int32 UnitsLeft = InRequest.Ship->UnitCapacity;
 
-	// TODO: Prevent duplicate cargo types
-	// TODO: Match CargoComplexity better
+	TArray<UCargoTypeDefinition*> AlreadyUsedCargo;
 	for(int32 i = 0; i < CargoComplexity; i++)
 	{
+		const int32 MinimumUnits = FMath::Min(FMath::FloorToInt32(static_cast<float>(InRequest.Ship->UnitCapacity) * (i / CargoComplexity)), UnitsLeft);
 		if(MutualCargoTypes.Num() > 0 ? FMath::RandBool() : false)
 		{
-			const int32 PickedIndex = FMath::RandRange(0, MutualCargoTypes.Num() - 1);
-			UCargoTypeDefinition* ChosenCargoType = MutualCargoTypes[PickedIndex];
-			if(int32 UnitsChosen = FMath::RandRange(1, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
+			if(UCargoTypeDefinition* ChosenCargoType = RandomEntryWithWeight(MutualCargoTypes, AlreadyUsedCargo); ChosenCargoType != nullptr)
+			{
+				if(int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
+				{
+					InRequest.CargoManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
+					RemainingWeight -= UnitsChosen * ChosenCargoType->WeightMultiplierPerUnit;
+					UnitsLeft -= UnitsChosen;
+					AlreadyUsedCargo.Add(ChosenCargoType);
+					continue;
+				}
+			}
+		}
+		
+		if(UCargoTypeDefinition* ChosenCargoType = RandomEntryWithWeight(InDataMap->CargoWeights, AlreadyUsedCargo))
+		{
+			if(int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
 			{
 				InRequest.CargoManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
 				RemainingWeight -= UnitsChosen * ChosenCargoType->WeightMultiplierPerUnit;
 				UnitsLeft -= UnitsChosen;
+				AlreadyUsedCargo.Add(ChosenCargoType);
 				continue;
 			}
-		}
-		
-		const int32 PickedIndex = FMath::RandRange(0, InDataMap->CargoTypes.Num() - 1);
-		UCargoTypeDefinition* ChosenCargoType = InDataMap->CargoTypes[PickedIndex];
-		if(int32 UnitsChosen = FMath::RandRange(1, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
-		{
-			InRequest.CargoManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
-			RemainingWeight -= UnitsChosen * ChosenCargoType->WeightMultiplierPerUnit;
-			UnitsLeft -= UnitsChosen;
-			continue;
 		}
 		
 		break;
@@ -184,6 +204,7 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 		InRequest.CargoManifest.ShipName = InRequest.CharacterAppearance->Character->ShipName;
 		InRequest.RequestType = InRequest.CharacterAppearance->CustomsRequestType;
 		InRequest.Faction = InRequest.CharacterAppearance->Character->Faction;
+		InRequest.Ship = InRequest.CharacterAppearance->Character->ShipClass;
 		
 		if(USubLocationDefinition* SubLocationDefinition = InRequest.CharacterAppearance->OriginLocation)
 		{

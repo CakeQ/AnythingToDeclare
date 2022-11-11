@@ -6,6 +6,7 @@
 
 #include "../Character/CharacterAppearanceDataAsset.h"
 #include "../Documents/CargoManifest.h"
+#include "AnythingToDeclare/Fluff/Ship/ShipClassDefinition.h"
 
 #include "CustomsRequest.generated.h"
 
@@ -29,6 +30,7 @@ public:
 		, CargoManifest()
 		, RequestType(ECustomsRequestType::None)
 		, Outcome(ECustomsRequestOutcome::Pending)
+		, Ship(nullptr)
 		, Faction(nullptr)
 		, OriginLocation(nullptr)
 		, DestinationLocation(nullptr)
@@ -54,6 +56,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	ECustomsRequestOutcome Outcome;
 
+	UPROPERTY(VisibleAnywhere)
+	UShipClassDefinition* Ship;
+	
 	UPROPERTY(VisibleAnywhere)
 	UFactionDefinition* Faction;
 	

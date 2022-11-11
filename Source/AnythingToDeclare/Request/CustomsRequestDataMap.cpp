@@ -2,6 +2,7 @@
 
 #include "CustomsRequestDataMap.h"
 
+#include "AnythingToDeclare/Fluff/Cargo/CargoCategoryDefinition.h"
 #include "AnythingToDeclare/Fluff/Cargo/CargoDefinition.h"
 #include "AnythingToDeclare/Fluff/Faction/FactionDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/LocationDefinition.h"
@@ -15,9 +16,19 @@ UCustomsRequestDataMap::UCustomsRequestDataMap()
 void UCustomsRequestDataMap::PostLoad()
 {
 	Super::PostLoad();
-	
-	SelectableCargoTypes.Empty();
-	SelectableContrabandTypes.Empty();
+	RegenerateDataLists();
+}
+
+void UCustomsRequestDataMap::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	RegenerateDataLists();
+}
+
+void UCustomsRequestDataMap::RegenerateDataLists()
+{
+	CargoWeights.Empty();
+	ContrabandWeights.Empty();
 	LocationWeights.Empty();
 	SubLocationWeights.Empty();
 	SelectableFactions.Empty();
@@ -28,11 +39,11 @@ void UCustomsRequestDataMap::PostLoad()
 		{
 			if(CargoTypeDefinition->IsIllegal)
 			{
-				SelectableContrabandTypes.Add(CargoTypeDefinition);
+				ContrabandWeights.Add(CargoTypeDefinition, CargoTypeDefinition->SelectionWeight + (CargoTypeDefinition->Category != nullptr ? CargoTypeDefinition->Category->SelectionWeight : 0.0f));
 			}
 			else
 			{
-				SelectableCargoTypes.Add(CargoTypeDefinition);
+				CargoWeights.Add(CargoTypeDefinition, CargoTypeDefinition->SelectionWeight + (CargoTypeDefinition->Category != nullptr ? CargoTypeDefinition->Category->SelectionWeight : 0.0f));
 			}
 		}
 	}

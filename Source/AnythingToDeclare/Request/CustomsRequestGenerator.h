@@ -20,12 +20,15 @@ namespace CustomsRequestsHelper
 	void FillFromCharacterAppearance(FCustomsRequest& InRequest);
 	
 	template <typename DataType>
-	DataType RandomEntryWithWeight(const TMap<DataType, float>& InData)
+	DataType RandomEntryWithWeight(const TMap<DataType, float>& InData, const TArray<DataType>& EntriesToIgnore = TArray<DataType>())
 	{
 		float TotalWeight = 0.0f;
 		for(const TPair<DataType, float>& Pair : InData)
 		{
-			TotalWeight += Pair.Value;
+			if(!EntriesToIgnore.Contains(Pair.Key))
+			{
+				TotalWeight += Pair.Value;
+			}
 		}
 
 		const float ChosenWeight = FMath::RandRange(0.0f, TotalWeight);
@@ -33,6 +36,11 @@ namespace CustomsRequestsHelper
 		
 		for(const TPair<DataType, float>& Pair : InData)
 		{
+			if(EntriesToIgnore.Contains(Pair.Key))
+			{
+				continue;
+			}
+			
 			CurrentChosenWeight += Pair.Value;
 			if(ChosenWeight <= CurrentChosenWeight)
 			{

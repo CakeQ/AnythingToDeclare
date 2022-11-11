@@ -31,6 +31,9 @@ public:
 	UCustomsRequestDataMap();
 	
 	virtual void PostLoad() override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	void RegenerateDataLists();
 	
 	UPROPERTY(EditDefaultsOnly)
 	UNameDefinitionMap* Names;
@@ -39,10 +42,10 @@ public:
 	TArray<UCargoTypeDefinition*> CargoTypes;
 
 	UPROPERTY()
-	TArray<UCargoTypeDefinition*> SelectableCargoTypes;
+	TMap<UCargoTypeDefinition*, float> CargoWeights;
 	
 	UPROPERTY()
-	TArray<UCargoTypeDefinition*> SelectableContrabandTypes;
+	TMap<UCargoTypeDefinition*, float> ContrabandWeights;
 	
 	UPROPERTY(EditDefaultsOnly)
 	USubLocationDefinition* DefaultWorkLocation;

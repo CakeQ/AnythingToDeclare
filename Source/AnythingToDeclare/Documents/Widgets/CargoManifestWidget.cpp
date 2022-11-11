@@ -34,6 +34,7 @@ void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
 	if(CargoManifestEntries != nullptr)
 	{
 		CargoManifestEntries->ClearChildren();
+		CargoManifestEntries->ScrollToStart();
 		for(const FCargoManifestEntry& Entry : InManifest.Cargo)
 		{
 			UCargoManifestEntryWidget* NewEntry = CreateWidget<UCargoManifestEntryWidget>(this, CargoManifestEntryWidgetClass);
