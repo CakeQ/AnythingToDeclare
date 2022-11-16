@@ -1,6 +1,5 @@
 ﻿// Copyright Daniel Thompson and Archie Whitehead @ https://github.com/CakeQ/
 
-
 #include "AnythingToDeclareGameState.h"
 
 #include "AnythingToDeclareDeveloperSettings.h"
@@ -8,6 +7,8 @@
 #include "Request/CustomsRequestDataMap.h"
 #include "Loader.h"
 #include "Camera/CameraActor.h"
+#include "Documents/Widgets/CodexWidget.h"
+#include "Documents/Widgets/CodexWidgetHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Request/CustomsRequestGenerator.h"
 #include "Widgets/CustomsRequestMonitorWidget.h"
@@ -44,6 +45,10 @@ void AAnythingToDeclareGameState::BeginPlay()
 			{
 				StartDay(1);
 			}
+			if(UCodexWidget* CodexWidget = CachedCodexWidget.Get())
+			{
+				CodexWidgetHelper::GenerateCodexListFromRegions(CodexWidget, InLoadedDataMap.SubLocations);
+			}
 	   });
 	}
 
@@ -76,6 +81,11 @@ void AAnythingToDeclareGameState::BeginPlay()
 							ActionBar->QuestionButton->OnReleased.AddDynamic(this, &AAnythingToDeclareGameState::OnQuestioned);
 						}
 					}
+				}
+				
+				if(UCodexWidget* CodexWidget = Cast<UCodexWidget>(WidgetComponent->GetWidget()))
+				{
+					CachedCodexWidget = CodexWidget;
 				}
 			}
 		}

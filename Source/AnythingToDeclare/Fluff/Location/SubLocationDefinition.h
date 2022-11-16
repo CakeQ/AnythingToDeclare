@@ -4,24 +4,31 @@
 
 #include <Engine/DataAsset.h>
 
+#include "AnythingToDeclare/Documents/CodexDataInterface.h"
 #include "SubLocationDefinition.generated.h"
 
 class ULocationDefinition;
 class UCargoTypeDefinition;
 
 UCLASS(Blueprintable)
-class USubLocationDefinition : public UDataAsset
+class USubLocationDefinition : public UDataAsset, public ICodexDataInterface
 {
 	GENERATED_BODY()
 	
 public:
-	USubLocationDefinition()
-		: RandomlySelectable(true)
+	USubLocationDefinition(const FObjectInitializer& ObjectInitializer)
+		: Super(ObjectInitializer)
+		, RandomlySelectable(true)
 		, ShowInCodex(true)
 		, PopularityModifier(1.0f)
 	{
 	}
-	
+
+	virtual const FString& GetDataName() const override;
+	virtual const FString& GetDescription() const override;
+	// virtual const FTexture& GetIcon() const override;
+	virtual const UDataAsset* GetParentData() const override;
+
 	UPROPERTY(EditDefaultsOnly)
 	bool RandomlySelectable;
 	
@@ -43,6 +50,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCargoTypeDefinition*> DemandedCargoTypes;
 
+	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
+	FSoftClassPath Icon;
+	
 	UPROPERTY(EditDefaultsOnly)
 	ULocationDefinition* Location;
 };
