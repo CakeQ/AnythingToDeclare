@@ -14,6 +14,11 @@ const FString& ULocationDefinition::GetDescription() const
 	return Description;
 }
 
+UMaterialInstance* ULocationDefinition::GetIcon() const
+{
+	return Icon;
+}
+
 const UDataAsset* ULocationDefinition::GetParentData() const
 {
 	return Region;

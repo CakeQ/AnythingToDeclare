@@ -48,6 +48,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UCargoCategoryDefinition* Category;
 	
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
-	FSoftClassPath Icon;
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstance* Icon;
 };

@@ -7,7 +7,8 @@
 
 #include "CodexWidget.generated.h"
 
-class UCodexListEntryWidget;
+class UCodexGenericViewWidget;
+class UCodexListEntry;
 class UTreeView;
 class UTextBlock;
 
@@ -20,15 +21,25 @@ public:
 	// virtual void SetCargoManifest(const FCargoManifest& InManifest);
 	//
 
-	virtual void PostInitProperties() override;
-	
-	void SetCodexList(const TArray<UCodexListEntryWidget*> InList) const;
+	virtual void NativeOnInitialized() override;
+
+	UFUNCTION()
+	void SetCodexList(const TArray<UCodexListEntry*>& InList) const;
 
 	UFUNCTION()
 	void OnGetChildren(UObject* Entry, TArray<UObject*>& OutChildren);
 	
+	UFUNCTION()
+	void UpdateListEntryExpansion(UObject* Entry, const bool bIsExpanded);
+	
+	UFUNCTION()
+	void SetActiveEntry(UObject* Entry);
+
 	UPROPERTY(meta = (BindWidget))
 	UTreeView* CodexList;
+
+	UPROPERTY(meta = (BindWidget))
+	UCodexGenericViewWidget* CodexView;
 
 protected:
 	
@@ -60,5 +71,5 @@ protected:
 	// TSubclassOf<UCargoManifestEntryWidget> CargoManifestEntryWidgetClass;
 
 	UPROPERTY()
-	TArray<UCodexListEntryWidget*> BaseCodexListItems;
+	TArray<UCodexListEntry*> BaseCodexListItems;
 };

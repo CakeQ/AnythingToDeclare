@@ -44,6 +44,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UFactionDefinition* Manufacturer;
 	
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
+	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.MaterialInstance"))
 	FSoftClassPath Icon;
 };

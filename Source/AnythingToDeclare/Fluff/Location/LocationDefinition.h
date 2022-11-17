@@ -26,6 +26,7 @@ public:
 
 	virtual const FString& GetDataName() const override;
 	virtual const FString& GetDescription() const override;
+	virtual UMaterialInstance* GetIcon() const override;
 	virtual const UDataAsset* GetParentData() const override;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -43,8 +44,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FString Description;
 	
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
-	FSoftClassPath Icon;
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstance* Icon;
 	
 	UPROPERTY(EditDefaultsOnly)
 	URegionDefinition* Region;

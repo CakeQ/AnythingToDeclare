@@ -21,8 +21,8 @@ public:
 	UFUNCTION()
 	virtual const FString& GetDescription() const = 0;
 	
-	// UFUNCTION()
-	// virtual const FTexture& GetIcon() const = 0;
+	UFUNCTION()
+	virtual UMaterialInstance* GetIcon() const = 0;
 
 	UFUNCTION()
 	virtual const UDataAsset* GetParentData() const = 0;

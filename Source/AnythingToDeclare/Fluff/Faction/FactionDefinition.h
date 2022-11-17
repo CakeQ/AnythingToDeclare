@@ -67,6 +67,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UDataTable* ShipNameWords;
 	
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
-	FSoftClassPath Icon;
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstance* Icon;
 };

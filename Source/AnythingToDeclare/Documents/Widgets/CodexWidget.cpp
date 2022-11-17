@@ -3,19 +3,20 @@
 
 #include "CodexWidget.h"
 
-#include "CodexListEntryWidget.h"
+#include "CodexGenericViewWidget.h"
+#include "CodexListEntry.h"
 #include "Components/TreeView.h"
 
-void UCodexWidget::PostInitProperties()
+void UCodexWidget::NativeOnInitialized()
 {
-	Super::PostInitProperties();
+	Super::NativeOnInitialized();
 	if(CodexList != nullptr)
 	{
 		CodexList->SetOnGetItemChildren(this, &UCodexWidget::OnGetChildren);
 	}
 }
 
-void UCodexWidget::SetCodexList(const TArray<UCodexListEntryWidget*> InList) const
+void UCodexWidget::SetCodexList(const TArray<UCodexListEntry*>& InList) const
 {
 	if(CodexList != nullptr)
 	{
@@ -27,9 +28,32 @@ void UCodexWidget::OnGetChildren(UObject* Entry, TArray<UObject*>& OutChildren)
 {
 	if(Entry != nullptr)
 	{
-		if(UCodexListEntryWidget* ListEntry = Cast<UCodexListEntryWidget>(Entry))
+		if(const UCodexListEntry* ListEntry = Cast<UCodexListEntry>(Entry))
 		{
 			OutChildren.Append(ListEntry->GetItemChildren());
 		}
+	}
+}
+
+void UCodexWidget::UpdateListEntryExpansion(UObject* Entry, const bool bIsExpanded)
+{
+	CodexList->SetItemExpansion(Entry, bIsExpanded);
+}
+
+void UCodexWidget::SetActiveEntry(UObject* Entry)
+{
+	if(CodexList != nullptr)
+	{
+		for(UObject* EntryIter : CodexList->GetListItems())
+		{
+			if(EntryIter != Entry)
+			{
+				CodexList->SetItemSelection(EntryIter, false);
+			}
+		}
+	}
+	if(CodexView != nullptr)
+	{
+		CodexView->SetCodexEntry(Entry);
 	}
 }

@@ -22,8 +22,9 @@ public:
 
 	virtual const FString& GetDataName() const override;
 	virtual const FString& GetDescription() const override;
+	virtual UMaterialInstance* GetIcon() const override;
 	virtual const UDataAsset* GetParentData() const override;
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	bool ShowInCodex;
 	
@@ -35,4 +36,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	FString Description;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstance* Icon;
 };

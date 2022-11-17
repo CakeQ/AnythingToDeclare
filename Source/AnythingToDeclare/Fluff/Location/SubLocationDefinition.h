@@ -26,7 +26,7 @@ public:
 
 	virtual const FString& GetDataName() const override;
 	virtual const FString& GetDescription() const override;
-	// virtual const FTexture& GetIcon() const override;
+	virtual UMaterialInstance* GetIcon() const override;
 	virtual const UDataAsset* GetParentData() const override;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -50,8 +50,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UCargoTypeDefinition*> DemandedCargoTypes;
 
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
-	FSoftClassPath Icon;
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstance* Icon;
 	
 	UPROPERTY(EditDefaultsOnly)
 	ULocationDefinition* Location;

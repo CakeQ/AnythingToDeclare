@@ -14,10 +14,10 @@ const FString& USubLocationDefinition::GetDescription() const
 	return Description;
 }
 
-// const FTexture& USubLocationDefinition::GetIcon() const
-// {
-// 	return Icon;
-// }
+UMaterialInstance* USubLocationDefinition::GetIcon() const
+{
+	return Icon;
+}
 
 const UDataAsset* USubLocationDefinition::GetParentData() const
 {
