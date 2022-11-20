@@ -34,9 +34,10 @@ public:
 	UFUNCTION()
 	void OnSelectionStateChanged(bool bBIsChecked);
 	
+	void UnselectItem() const;
+	
 protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
-	virtual void NativeOnItemSelectionChanged(bool bIsSelected) override;
 
 	UPROPERTY()
 	UCodexListEntry* LinkedData;

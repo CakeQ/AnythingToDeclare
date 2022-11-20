@@ -4,64 +4,101 @@
 
 #include "CodexListEntry.h"
 #include "CodexWidget.h"
+#include "AnythingToDeclare/Fluff/Cargo/CargoDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/LocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/RegionDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
 
-void CodexWidgetHelper::GenerateCodexListFromRegions(UCodexWidget* CodexWidget,
-                                                     const TArray<USubLocationDefinition*> SubLocations)
+void CodexWidgetHelper::GenerateCodexListFromData(UCodexWidget* CodexWidget, const TArray<UObject*>& DataEntries)
 {
-	TArray<UCodexListEntry*> ListEntries;
-	TMap<const ULocationDefinition*, UCodexListEntry*> LocationWidgets;
-	TMap<const URegionDefinition*, UCodexListEntry*> RegionWidgets;
-	
-	for(const USubLocationDefinition* SubLocation : SubLocations)
+	if(CodexWidget != nullptr)
 	{
-		UCodexListEntry* SubLocationWidget = NewObject<UCodexListEntry>(CodexWidget);
-		SubLocationWidget->SetLinkedData(SubLocation);
-		if(SubLocation->Location != nullptr)
+		TArray<UCodexListEntry*> ListEntries;
+		TMap<const UObject*, UCodexListEntry*> ExistingEntries;
+		for(const UObject* DataEntry : DataEntries)
 		{
-			UCodexListEntry* LocationWidget = nullptr;
-			if(UCodexListEntry** Location = LocationWidgets.Find(SubLocation->Location))
+			if(UCodexListEntry* CodexListEntry = CreateEntryForData(CodexWidget, DataEntry, ExistingEntries, nullptr))
 			{
-				if(UCodexListEntry* LocationPtr = *Location)
-				{
-					LocationWidget = LocationPtr;
-				}
-			}
-			else
-			{
-				LocationWidget = NewObject<UCodexListEntry>(CodexWidget);
-				LocationWidget->SetLinkedData(SubLocation->Location);
-				LocationWidgets.Add(SubLocation->Location, LocationWidget);
-				if(SubLocation->Location->Region != nullptr)
-				{
-					UCodexListEntry* RegionWidget = nullptr;
-					if(UCodexListEntry** Region = RegionWidgets.Find(SubLocation->Location->Region))
-					{
-						if(UCodexListEntry* RegionPtr = *Region)
-						{
-							RegionWidget = RegionPtr;
-						}
-					}
-					else
-					{
-						RegionWidget = NewObject<UCodexListEntry>(CodexWidget);
-						RegionWidget->SetLinkedData(SubLocation->Location->Region);
-						RegionWidgets.Add(SubLocation->Location->Region, RegionWidget);
-						ListEntries.Add(RegionWidget);
-					}
-					if(RegionWidget != nullptr)
-					{
-						RegionWidget->AddChildEntry(LocationWidget);
-					}
-				}
-			}
-			if(LocationWidget != nullptr)
-			{
-				LocationWidget->AddChildEntry(SubLocationWidget);
+				ListEntries.AddUnique(CodexListEntry);
 			}
 		}
+		CodexWidget->SetCodexList(ListEntries);
 	}
-	CodexWidget->SetCodexList(ListEntries);
+}
+
+void CodexWidgetHelper::GenerateCodexListFromSubLocations(UCodexWidget* CodexWidget,
+	const TArray<USubLocationDefinition*>& DataEntries)
+{
+	if(CodexWidget != nullptr)
+	{
+		TArray<UCodexListEntry*> ListEntries;
+		TMap<const UObject*, UCodexListEntry*> ExistingEntries;
+		for(const USubLocationDefinition* DataEntry : DataEntries)
+		{
+			if(UCodexListEntry* CodexListEntry = CreateEntryForData(CodexWidget, DataEntry, ExistingEntries, nullptr))
+			{
+				ListEntries.AddUnique(CodexListEntry);
+			}
+		}
+		CodexWidget->SetCodexList(ListEntries);
+	}
+}
+
+void CodexWidgetHelper::GenerateCodexListFromCargoDefinitions(UCodexWidget* CodexWidget,
+	const TArray<UCargoTypeDefinition*>& DataEntries)
+{
+	if(CodexWidget != nullptr)
+	{
+		TArray<UCodexListEntry*> ListEntries;
+		TMap<const UObject*, UCodexListEntry*> ExistingEntries;
+		for(const UCargoTypeDefinition* DataEntry : DataEntries)
+		{
+			if(UCodexListEntry* CodexListEntry = CreateEntryForData(CodexWidget, DataEntry, ExistingEntries, nullptr))
+			{
+				ListEntries.AddUnique(CodexListEntry);
+			}
+		}
+		CodexWidget->SetCodexList(ListEntries);
+	}
+}
+
+UCodexListEntry* CodexWidgetHelper::CreateEntryForData(UCodexWidget* CodexWidget, const UObject* DataEntry,
+                                                       TMap<const UObject*, UCodexListEntry*>& ExistingEntries, UCodexListEntry* NewChildEntry)
+{
+	if(const ICodexDataInterface* DataInterface = Cast<const ICodexDataInterface>(DataEntry))
+	{
+		UCodexListEntry* CodexListEntry = nullptr;
+		bool CreatedNewEntry = false;
+		if(UCodexListEntry** ExistingEntry = ExistingEntries.Find(DataEntry))
+		{
+			if(UCodexListEntry* ExistingEntryPtr = *ExistingEntry)
+			{
+				CodexListEntry = ExistingEntryPtr;
+				if(NewChildEntry != nullptr)
+				{
+					CodexListEntry->AddChildEntry(NewChildEntry);
+				}
+			}
+		}
+		else if(CodexListEntry == nullptr)
+		{
+			CodexListEntry = NewObject<UCodexListEntry>(CodexWidget);
+			CreatedNewEntry = true;
+			CodexListEntry->SetLinkedData(DataEntry);
+			if(NewChildEntry != nullptr)
+			{
+				CodexListEntry->AddChildEntry(NewChildEntry);
+			}
+			ExistingEntries.Add(DataEntry, CodexListEntry);
+		}
+		if(const UDataAsset* ParentData = DataInterface->GetParentData())
+		{
+			if(UCodexListEntry* ParentListEntry = CreateEntryForData(CodexWidget, ParentData, ExistingEntries, CreatedNewEntry ? CodexListEntry : nullptr))
+			{
+				return ParentListEntry;
+			}
+		}
+		return CodexListEntry;
+	}
+	return nullptr;
 }

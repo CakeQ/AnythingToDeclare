@@ -2,14 +2,15 @@
 
 #include "CoreMinimal.h"
 
+#include "CargoCategoryDefinition.h"
+#include "AnythingToDeclare/Documents/CodexDataInterface.h"
+
 #include <Engine/DataAsset.h>
 
 #include "CargoDefinition.generated.h"
 
-class UCargoCategoryDefinition;
-
 UCLASS(Blueprintable)
-class UCargoTypeDefinition : public UDataAsset
+class UCargoTypeDefinition : public UDataAsset, public ICodexDataInterface
 {
 	GENERATED_BODY()
 	
@@ -19,6 +20,26 @@ public:
 		, ShowInCodex(true)
 		, SelectionWeight(1.0f)
 	{
+	}
+
+	virtual const FString& GetDataName() const override
+	{
+		return Name;
+	}
+
+	virtual const FString& GetDescription() const override
+	{
+		return Description;
+	}
+
+	virtual UMaterialInstance* GetIcon() const override
+	{
+		return Icon;
+	}
+
+	virtual const UDataAsset* GetParentData() const override
+	{
+		return Category;
 	}
 	
 	UPROPERTY(EditDefaultsOnly)

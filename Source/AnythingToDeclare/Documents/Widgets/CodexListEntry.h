@@ -19,17 +19,17 @@ public:
 	const TArray<UCodexListEntry*>& GetItemChildren() const { return Children; };
 	
 	UFUNCTION()
-	void SetLinkedData(const UDataAsset* InData);
+	void SetLinkedData(const UObject* InData);
 
 	UFUNCTION()
-	const UDataAsset* GetLinkedData() const { return LinkedData; };
+	const UObject* GetLinkedData() const { return LinkedData; };
 	
 	UFUNCTION()
 	void AddChildEntry(UCodexListEntry* InChild);
 
 private:
 	UPROPERTY()
-	const UDataAsset* LinkedData;
+	const UObject* LinkedData;
 
 	TArray<UCodexListEntry*> Children;
 };

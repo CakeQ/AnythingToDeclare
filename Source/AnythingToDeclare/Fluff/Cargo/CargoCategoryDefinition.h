@@ -2,12 +2,14 @@
 
 #include "CoreMinimal.h"
 
+#include "AnythingToDeclare/Documents/CodexDataInterface.h"
+
 #include <Engine/DataAsset.h>
 
 #include "CargoCategoryDefinition.generated.h"
 
 UCLASS(Blueprintable)
-class UCargoCategoryDefinition : public UDataAsset
+class UCargoCategoryDefinition : public UDataAsset, public ICodexDataInterface
 {
 	GENERATED_BODY()
 	
@@ -17,12 +19,35 @@ public:
 	{
 	}
 	
+	virtual const FString& GetDataName() const override
+	{
+		return Name;
+	}
+
+	virtual const FString& GetDescription() const override
+	{
+		return Description;
+	}
+
+	virtual UMaterialInstance* GetIcon() const override
+	{
+		return DefaultIcon;
+	}
+
+	virtual const UDataAsset* GetParentData() const override
+	{
+		return nullptr;
+	}
+	
 	UPROPERTY(EditDefaultsOnly)
 	float SelectionWeight;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FString Name;
 
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
-	FSoftClassPath DefaultIcon;
+	UPROPERTY(EditDefaultsOnly)
+	FString Description;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstance* DefaultIcon;
 };

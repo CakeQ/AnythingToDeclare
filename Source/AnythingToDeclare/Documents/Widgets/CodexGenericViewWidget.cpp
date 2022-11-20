@@ -8,7 +8,7 @@
 #include "Components/Image.h"
 #include "UMG/Public/Components/TextBlock.h"
 
-void UCodexGenericViewWidget::SetCodexEntry(const UObject* InObject) const
+void UCodexGenericViewWidget::SetCodexEntry(const UObject* InObject)
 {
 	if(const UCodexListEntry* CodexEntry = Cast<const UCodexListEntry>(InObject))
 	{

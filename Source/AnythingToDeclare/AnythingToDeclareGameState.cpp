@@ -11,6 +11,7 @@
 #include "Documents/Widgets/CodexWidgetHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Request/CustomsRequestGenerator.h"
+#include "Widgets/CustomsRequestCodexMonitorWidget.h"
 #include "Widgets/CustomsRequestMonitorWidget.h"
 
 AAnythingToDeclareGameState::AAnythingToDeclareGameState(const FObjectInitializer& InInitializer)
@@ -45,9 +46,10 @@ void AAnythingToDeclareGameState::BeginPlay()
 			{
 				StartDay(1);
 			}
-			if(UCodexWidget* CodexWidget = CachedCodexWidget.Get())
+			if(const UCustomsRequestCodexMonitorWidget* CodexMonitorWidget = CachedCodexMonitorWidget.Get())
 			{
-				CodexWidgetHelper::GenerateCodexListFromRegions(CodexWidget, InLoadedDataMap.SubLocations);
+				CodexWidgetHelper::GenerateCodexListFromSubLocations(CodexMonitorWidget->LocationCodex, InLoadedDataMap.SubLocations);
+				CodexWidgetHelper::GenerateCodexListFromCargoDefinitions(CodexMonitorWidget->CargoCodex, InLoadedDataMap.CargoTypes);
 			}
 	   });
 	}
@@ -83,9 +85,9 @@ void AAnythingToDeclareGameState::BeginPlay()
 					}
 				}
 				
-				if(UCodexWidget* CodexWidget = Cast<UCodexWidget>(WidgetComponent->GetWidget()))
+				if(UCustomsRequestCodexMonitorWidget* CodexMonitorWidget = Cast<UCustomsRequestCodexMonitorWidget>(WidgetComponent->GetWidget()))
 				{
-					CachedCodexWidget = CodexWidget;
+					CachedCodexMonitorWidget = CodexMonitorWidget;
 				}
 			}
 		}

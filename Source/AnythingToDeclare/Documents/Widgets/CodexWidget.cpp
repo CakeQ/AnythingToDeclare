@@ -5,7 +5,9 @@
 
 #include "CodexGenericViewWidget.h"
 #include "CodexListEntry.h"
+#include "CodexListEntryWidget.h"
 #include "Components/TreeView.h"
+#include "Components/WidgetSwitcher.h"
 
 void UCodexWidget::NativeOnInitialized()
 {
@@ -46,14 +48,66 @@ void UCodexWidget::SetActiveEntry(UObject* Entry)
 	{
 		for(UObject* EntryIter : CodexList->GetListItems())
 		{
-			if(EntryIter != Entry)
+			UnselectEntryAndChildren(EntryIter, Entry);
+		}
+	}
+	if(CodexViewSwitcher != nullptr)
+	{
+		if(int32 EntryLayer = -1; GetEntryLayer(Entry, EntryLayer, CodexList->GetListItems()))
+		{
+			if(UWidget* Widget = CodexViewSwitcher->GetWidgetAtIndex(EntryLayer))
 			{
-				CodexList->SetItemSelection(EntryIter, false);
+				CodexViewSwitcher->SetActiveWidgetIndex(EntryLayer);
+				if(UCodexGenericViewWidget* CodexViewWidget = Cast<UCodexGenericViewWidget>(Widget))
+				{
+					CodexViewWidget->SetCodexEntry(Entry);
+				}
 			}
 		}
 	}
-	if(CodexView != nullptr)
+}
+
+void UCodexWidget::UnselectEntryAndChildren(UObject* Entry, const UObject* IgnoreObject)
+{
+	if(CodexList != nullptr && Entry != nullptr)
 	{
-		CodexView->SetCodexEntry(Entry);
+		TArray<UObject*> Children;
+		OnGetChildren(Entry, Children);
+
+		if(Entry != IgnoreObject)
+		{
+			if(const UCodexListEntryWidget* EntryWidget = CodexList->GetEntryWidgetFromItem<UCodexListEntryWidget>(Entry))
+			{
+				EntryWidget->UnselectItem();
+			}
+		}
+		
+		for(UObject* Child : Children)
+		{
+			UnselectEntryAndChildren(Child, IgnoreObject);
+		}
 	}
+}
+
+bool UCodexWidget::GetEntryLayer(UObject* Entry, int32& LayerCount, const TArray<UObject*>& Entries)
+{
+	if(CodexList != nullptr && Entry != nullptr)
+	{
+		for(UObject* EntryIter : Entries)
+		{
+			if(Entry == EntryIter)
+			{
+				LayerCount++;
+				return true;
+			}
+			TArray<UObject*> Children;
+			OnGetChildren(EntryIter, Children);
+			if(GetEntryLayer(Entry, LayerCount, Children))
+			{
+				LayerCount++;
+				return true;
+			}
+		}
+	}
+	return false;
 }

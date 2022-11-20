@@ -20,7 +20,7 @@ class ANYTHINGTODECLARE_API UCodexGenericViewWidget : public UUserWidget
 
 public:
 	UFUNCTION()
-	void SetCodexEntry(const UObject* InObject) const;
+	virtual void SetCodexEntry(const UObject* InObject);
 	
 private:
 	UPROPERTY(meta = (BindWidget))

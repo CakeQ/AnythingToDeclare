@@ -7,20 +7,16 @@
 
 #include "CodexWidget.generated.h"
 
-class UCodexGenericViewWidget;
+class UWidgetSwitcher;
 class UCodexListEntry;
 class UTreeView;
-class UTextBlock;
 
 UCLASS(Abstract, Blueprintable)
 class UCodexWidget : public UUserWidget
 {
 	GENERATED_BODY()
+	
 public:
-	// UFUNCTION(BlueprintCallable)
-	// virtual void SetCargoManifest(const FCargoManifest& InManifest);
-	//
-
 	virtual void NativeOnInitialized() override;
 
 	UFUNCTION()
@@ -35,41 +31,18 @@ public:
 	UFUNCTION()
 	void SetActiveEntry(UObject* Entry);
 
+	UFUNCTION()
+	void UnselectEntryAndChildren(UObject* Entry, const UObject* IgnoreObject);
+
+	bool GetEntryLayer(UObject* Entry, int32& LayerCount, const TArray<UObject*>& Entries);
+	
 	UPROPERTY(meta = (BindWidget))
 	UTreeView* CodexList;
 
 	UPROPERTY(meta = (BindWidget))
-	UCodexGenericViewWidget* CodexView;
-
-protected:
+	UWidgetSwitcher* CodexViewSwitcher;
 	
-	// UPROPERTY(meta = (BindWidget))
-	// UGenericCodexTabWidget* Locations;
-	//
-	// UPROPERTY(meta = (BindWidget))
-	// UGenericCodexTabWidget* Cargo;
-	//
-	// UPROPERTY(meta = (BindWidget))
-	// UGenericCodexTabWidget* Cargo;
-	//
-	// UPROPERTY(meta = (BindWidget))
-	// UTextBlock* OriginPlanet;
-	//
-	// UPROPERTY(meta = (BindWidget))
-	// UTextBlock* OriginSubLocation;
-	//
-	// UPROPERTY(meta = (BindWidget))
-	// UTextBlock* DestinationPlanet;
-	//
-	// UPROPERTY(meta = (BindWidget))
-	// UTextBlock* DestinationSubLocation;
-	//
-	// UPROPERTY(meta = (BindWidget))
-	// UScrollBox* CargoManifestEntries;
-	//
-	// UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<UCargoManifestEntryWidget> CargoManifestEntryWidgetClass;
-
+protected:
 	UPROPERTY()
 	TArray<UCodexListEntry*> BaseCodexListItems;
 };

@@ -6,12 +6,12 @@
 
 #include "Console/GenericConsole.h"
 #include "Day/DayDefinition.h"
-#include "Documents/Widgets/CargoManifestWidget.h"
 #include "GameFramework/GameStateBase.h"
 #include "Request/CustomsRequest.h"
 
 #include "AnythingToDeclareGameState.generated.h"
 
+class UCustomsRequestCodexMonitorWidget;
 class UCodexWidget;
 class UCustomsRequestMonitorWidget;
 class UCustomsRequestDataMap;
@@ -79,7 +79,7 @@ private:
 	TWeakObjectPtr<UCustomsRequestMonitorWidget> CachedRequestMonitorWidget;
 
 	UPROPERTY()
-	TWeakObjectPtr<UCodexWidget> CachedCodexWidget;
+	TWeakObjectPtr<UCustomsRequestCodexMonitorWidget> CachedCodexMonitorWidget;
 
 	UPROPERTY()
 	TWeakObjectPtr<AGenericConsole> FocusedConsole;

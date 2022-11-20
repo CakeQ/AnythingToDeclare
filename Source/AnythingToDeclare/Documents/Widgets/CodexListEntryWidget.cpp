@@ -41,20 +41,19 @@ void UCodexListEntryWidget::OnExpansionStateChanged(const bool bBIsChecked)
 	OnExpansionUpdated.Broadcast(LinkedData, bBIsChecked);
 }
 
-void UCodexListEntryWidget::NativeOnItemSelectionChanged(bool bIsSelected)
-{
-	IUserListEntry::NativeOnItemSelectionChanged(bIsSelected);
-	if(EntrySelection != nullptr)
-	{
-		EntrySelection->SetCheckedState(bIsSelected ? ECheckBoxState::Checked: ECheckBoxState::Unchecked);
-	}
-}
-
 void UCodexListEntryWidget::OnSelectionStateChanged(bool bBIsChecked)
 {
 	if(bBIsChecked)
 	{
 		OnSelectedEvent.Broadcast(LinkedData);
+	}
+}
+
+void UCodexListEntryWidget::UnselectItem() const
+{
+	if(EntrySelection != nullptr)
+	{
+		EntrySelection->SetCheckedState(ECheckBoxState::Unchecked);
 	}
 }
 

@@ -5,7 +5,7 @@
 
 #include "AnythingToDeclare/Documents/CodexDataInterface.h"
 
-void UCodexListEntry::SetLinkedData(const UDataAsset* InData)
+void UCodexListEntry::SetLinkedData(const UObject* InData)
 {
 	LinkedData = InData;
 }
