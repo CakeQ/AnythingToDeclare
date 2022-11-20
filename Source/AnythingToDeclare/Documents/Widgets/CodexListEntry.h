@@ -31,5 +31,6 @@ private:
 	UPROPERTY()
 	const UObject* LinkedData;
 
+	UPROPERTY()
 	TArray<UCodexListEntry*> Children;
 };

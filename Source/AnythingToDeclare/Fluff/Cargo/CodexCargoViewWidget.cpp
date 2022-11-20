@@ -89,7 +89,9 @@ void UCodexCargoViewWidget::RefreshUnitDisplays()
 	
 	if(WeightPerUnitDisplay != nullptr)
 	{
-		WeightPerUnitDisplay->SetText(FText::AsNumber(WeightPerUnit * UnitReferenceValue));
+		FNumberFormattingOptions FormattingOptions;
+		FormattingOptions.SetMaximumFractionalDigits(1);
+		WeightPerUnitDisplay->SetText(FText::AsNumber(WeightPerUnit * UnitReferenceValue, &FormattingOptions));
 	}
 		
 	if(ValuePerUnitDisplay != nullptr)
