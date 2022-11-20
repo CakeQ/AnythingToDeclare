@@ -37,7 +37,7 @@ void UCodexCargoViewWidget::SetCodexEntry(const UObject* InObject)
 
 void UCodexCargoViewWidget::AdjustUnitReference(int32 InAmount)
 {
-	UnitReferenceValue = FMath::Clamp(1, UnitReferenceValue + InAmount, UnitReferenceValueMax);
+	UnitReferenceValue = FMath::Clamp(UnitReferenceValue + InAmount, 1, UnitReferenceValueMax);
 	RefreshUnitDisplays();
 }
 
