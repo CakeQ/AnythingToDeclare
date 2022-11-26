@@ -232,9 +232,9 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 		InRequest.Character.ShipName.Append(ChosenPrefix->Name.ToString());
 		for(int32 i = 0; i < ShipNameComplexity; i++)
 		{
-			if(!InRequest.CargoManifest.ShipName.IsEmpty())
+			if(!InRequest.Character.ShipName.IsEmpty())
 			{
-				InRequest.CargoManifest.ShipName.Append(TEXT(" "));
+				InRequest.Character.ShipName.Append(TEXT(" "));
 			}
 
 			FString ChosenWord;
