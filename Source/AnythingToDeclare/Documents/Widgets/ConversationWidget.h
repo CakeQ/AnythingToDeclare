@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AnythingToDeclare/Request/CustomsRequest.h"
 #include "Blueprint/UserWidget.h"
 #include "UObject/Object.h"
 #include "ConversationWidget.generated.h"
@@ -23,7 +24,8 @@ public:
 	
 	void AddDialogue(const FText& InText, const FText& InName, UMaterialInstance* InIcon, const bool IsPlayer);
 	void ClearConversation() const;
-	
+	void EndConversation(const ECustomsRequestOutcome InOutcome);
+
 private:
 	UPROPERTY(meta = (BindWidget))
 	UScrollBox* ConversationLog;
@@ -33,4 +35,13 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UConversationEntryWidget> PlayerEntryWidget;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> ApprovedWidget;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> DeniedWidget;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> EndWidget;
 };

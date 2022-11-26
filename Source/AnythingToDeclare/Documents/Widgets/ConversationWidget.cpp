@@ -46,3 +46,22 @@ void UConversationWidget::ClearConversation() const
 		ConversationLog->ClearChildren();
 	}
 }
+
+void UConversationWidget::EndConversation(const ECustomsRequestOutcome InOutcome)
+{
+	UUserWidget* NewEntry = nullptr;
+	switch(InOutcome)
+	{
+	case ECustomsRequestOutcome::Approved:
+		NewEntry = CreateWidget<UUserWidget>(this, ApprovedWidget);
+		break;
+	case ECustomsRequestOutcome::Denied:
+		NewEntry = CreateWidget<UUserWidget>(this, DeniedWidget);
+		break;
+	default:
+		NewEntry = CreateWidget<UUserWidget>(this, EndWidget);
+		break;
+	}
+	ConversationLog->AddChild(NewEntry);
+	ConversationLog->ScrollToEnd();
+}

@@ -65,7 +65,7 @@ public:
 	
 private:
 	UFUNCTION()
-	void HandleRequest(const ECustomsRequestOutcome& InOutcome);
+	void HandleRequest(const ECustomsRequestOutcome InOutcome);
 	
 	UPROPERTY(VisibleAnywhere)
 	int32 DayNumber;

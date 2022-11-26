@@ -338,12 +338,29 @@ void AAnythingToDeclareGameState::SendMessage(const FDialogueMessage& InMessage)
 	}
 }
 
-void AAnythingToDeclareGameState::HandleRequest(const ECustomsRequestOutcome& InOutcome)
+void AAnythingToDeclareGameState::HandleRequest(const ECustomsRequestOutcome InOutcome)
 {
 	if(CurrentRequest.IsValid())
 	{
 		CurrentRequest.Outcome = InOutcome;
 		ProcessedRequests.Add(CurrentRequest);
+	}
+	if(const UCustomsRequestConversationMonitorWidget* ConversationMonitorWidget = CachedConversationMonitorWidget.Get())
+	{
+		if(const UWorld* World = GetWorld())
+		{
+			FTimerManager& TimerManager = World->GetTimerManager();
+			for(FTimerHandle& Handle : ConversationTimerHandles)
+			{
+				TimerManager.ClearTimer(Handle);
+				Handle.Invalidate();
+			}
+			ConversationTimerHandles.Empty();
+		}
+		if(ConversationMonitorWidget->ConversationWidget != nullptr)
+		{
+			ConversationMonitorWidget->ConversationWidget->EndConversation(InOutcome);
+		}
 	}
 	NextRequest();
 }
