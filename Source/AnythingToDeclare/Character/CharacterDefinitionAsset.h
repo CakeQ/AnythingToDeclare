@@ -21,7 +21,7 @@ public:
 	int32 CryogenicAge;
 	
 	UPROPERTY(EditDefaultsOnly)
-	FString Name;
+	TArray<FString> Names;
 
 	UPROPERTY(EditDefaultsOnly)
 	FString Surname;

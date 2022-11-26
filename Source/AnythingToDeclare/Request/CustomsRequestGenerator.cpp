@@ -88,7 +88,7 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 		// InRequest.Character.FacePortrait = GenerateFacePortrait();
 	}
 	
-	if(InRequest.Character.Name.IsEmpty())
+	if(InRequest.Character.Names.IsEmpty())
 	{
 		TMap<int32, float>& NameComplexityToUse = InDataMap->Names->NameComplexityModifiers;
 		const UDataTable* NameTableToUse = InDataMap->Names->Names;
@@ -117,13 +117,9 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 		for(int32 i = 0; i < NameComplexity; i++)
 		{
 			const FNameDefinitionData* ChosenName = NameTableToUse->FindRow<FNameDefinitionData>(Names[FMath::RandRange(0, Names.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
-			if(i != 0)
+			if(ChosenName != nullptr)
 			{
-				InRequest.Character.Name.Append(FString::Printf(TEXT(" %s"), *ChosenName->Name.ToString()));
-			}
-			else
-			{
-				InRequest.Character.Name = ChosenName->Name.ToString();
+				InRequest.Character.Names.Add(ChosenName->Name.ToString());
 			}
 		}
 	}
@@ -200,6 +196,20 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 			{
 				ChosenWord = CallSignsToUse->CallSignNouns[FMath::RandRange(0, CallSignsToUse->CallSignNouns.Num() - 1)].ToString();
 			}
+
+			if(ChosenWord.Contains(TEXT("{name}")))
+			{
+				ChosenWord = ChosenWord.Replace(TEXT("{name}"), *InRequest.Character.Names[FMath::RandRange(0, InRequest.Character.Names.Num() - 1)]);
+			}
+			if(ChosenWord.Contains(TEXT("{surname}")))
+			{
+				ChosenWord = ChosenWord.Replace(TEXT("{surname}"), *InRequest.Character.Surname);
+			}
+			// TODO: Integrate year of birth codename
+			// if(ChosenWord.Contains(TEXT("{yearofbirth}")))
+			// {
+			// 	ChosenWord = ChosenWord.Replace(TEXT("{yearofbirth}"), *InRequest.Character.Age);
+			// }
 			
 			InRequest.Character.CallSign.Append(ChosenWord);
 		}
@@ -402,7 +412,7 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 		InRequest.Ship = InRequest.CharacterAppearance->Character->ShipClass;
 
 		InRequest.Character.Age = InRequest.CharacterAppearance->Character->Age;
-		InRequest.Character.Name = InRequest.CharacterAppearance->Character->Name;
+		InRequest.Character.Names = InRequest.CharacterAppearance->Character->Names;
 		InRequest.Character.Portrait = InRequest.CharacterAppearance->Character->Portrait;
 		InRequest.Character.Surname = InRequest.CharacterAppearance->Character->Surname;
 		InRequest.Character.CallSign = InRequest.CharacterAppearance->Character->CallSign;

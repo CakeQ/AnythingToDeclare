@@ -16,7 +16,7 @@ public:
 	FCharacterAppearance()
 		: Age(0)
 		, CryogenicAge(0)
-		, Name()
+		, Names()
 		, Surname()
 		, Portrait(nullptr)
 		, FacePortrait(nullptr)
@@ -31,7 +31,7 @@ public:
 	int32 CryogenicAge;
 	
 	UPROPERTY()
-	FString Name;
+	TArray<FString> Names;
 
 	UPROPERTY()
 	FString Surname;

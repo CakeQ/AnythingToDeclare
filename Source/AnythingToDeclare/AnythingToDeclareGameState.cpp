@@ -294,7 +294,16 @@ void AAnythingToDeclareGameState::GenerateMessageToSend(const FGameplayTag& Mess
 			if(IsPlayer && CustomsDataMap != nullptr && CustomsDataMap->PlayerCharacter != nullptr)
 			{
 				Message.DialogueIcon = CustomsDataMap->PlayerCharacter->Portrait;
-				Message.DisplayName = FText::FromString(CustomsDataMap->PlayerCharacter->Name);
+				FString NamesCombined;
+				for(const FString& Name : CustomsDataMap->PlayerCharacter->Names)
+				{
+					if(!NamesCombined.IsEmpty())
+					{
+						NamesCombined.Append(" ");
+					}
+					NamesCombined.Append(Name);
+				}
+				Message.DisplayName = FText::FromString(NamesCombined);
 			}
 			else
 			{
