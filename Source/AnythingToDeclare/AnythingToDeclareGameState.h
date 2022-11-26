@@ -11,6 +11,7 @@
 
 #include "AnythingToDeclareGameState.generated.h"
 
+class UCustomsRequestConversationMonitorWidget;
 class UCustomsRequestCodexMonitorWidget;
 class UCodexWidget;
 class UCustomsRequestMonitorWidget;
@@ -80,6 +81,9 @@ private:
 
 	UPROPERTY()
 	TWeakObjectPtr<UCustomsRequestCodexMonitorWidget> CachedCodexMonitorWidget;
+
+	UPROPERTY()
+	TWeakObjectPtr<UCustomsRequestConversationMonitorWidget> CachedConversationMonitorWidget;
 
 	UPROPERTY()
 	TWeakObjectPtr<AGenericConsole> FocusedConsole;

@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Request/CustomsRequestGenerator.h"
 #include "Widgets/CustomsRequestCodexMonitorWidget.h"
+#include "Widgets/CustomsRequestConversationMonitorWidget.h"
 #include "Widgets/CustomsRequestMonitorWidget.h"
 
 AAnythingToDeclareGameState::AAnythingToDeclareGameState(const FObjectInitializer& InInitializer)
@@ -88,6 +89,11 @@ void AAnythingToDeclareGameState::BeginPlay()
 				if(UCustomsRequestCodexMonitorWidget* CodexMonitorWidget = Cast<UCustomsRequestCodexMonitorWidget>(WidgetComponent->GetWidget()))
 				{
 					CachedCodexMonitorWidget = CodexMonitorWidget;
+				}
+				
+				if(UCustomsRequestConversationMonitorWidget* ConversationMonitorWidget = Cast<UCustomsRequestConversationMonitorWidget>(WidgetComponent->GetWidget()))
+				{
+					CachedConversationMonitorWidget = ConversationMonitorWidget;
 				}
 			}
 		}
