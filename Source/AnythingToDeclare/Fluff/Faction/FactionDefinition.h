@@ -10,6 +10,7 @@
 #include "FactionDefinition.generated.h"
 
 class UDataTable;
+class UNameDefinitionMap;
 
 UCLASS(Blueprintable)
 class ANYTHINGTODECLARE_API UFactionDefinition : public UDataAsset
@@ -48,24 +49,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UShipClassDefinition*> ShipClasses;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TMap<int32, float> NameComplexityModifiers;
 
 	UPROPERTY(EditDefaultsOnly)
-	UDataTable* CharacterNames;
-	
-	UPROPERTY(EditDefaultsOnly)
-	UDataTable* CharacterSurnames;
-
-	UPROPERTY(EditDefaultsOnly)
-	UDataTable* CallSignWords;
-
-	UPROPERTY(EditDefaultsOnly)
-	UDataTable* ShipNamePrefixes;
-	
-	UPROPERTY(EditDefaultsOnly)
-	UDataTable* ShipNameWords;
+	UNameDefinitionMap* FactionNameOverrides;
 	
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInstance* Icon;

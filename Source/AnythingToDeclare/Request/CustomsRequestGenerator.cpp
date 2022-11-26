@@ -87,14 +87,36 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 		// TODO
 		// InRequest.Character.FacePortrait = GenerateFacePortrait();
 	}
-
+	
 	if(InRequest.Character.Name.IsEmpty())
 	{
-		const int32 NameComplexity = RandomEntryWithWeight(InDataMap->Names->NameComplexityModifiers);
-		const TArray<FName>& Names = InDataMap->Names->Names->GetRowNames();
+		TMap<int32, float>& NameComplexityToUse = InDataMap->Names->NameComplexityModifiers;
+		const UDataTable* NameTableToUse = InDataMap->Names->Names;
+
+		int32 CurrentPriority = InDataMap->Names->NamePriority;
+		if(InRequest.Faction != nullptr && InRequest.Faction->FactionNameOverrides != nullptr)
+		{
+			if(InRequest.Faction->FactionNameOverrides->CallSignPriority > CurrentPriority)
+			{
+				NameComplexityToUse = InRequest.Faction->FactionNameOverrides->NameComplexityModifiers;
+				NameTableToUse = InRequest.Faction->FactionNameOverrides->Names;
+				CurrentPriority = InRequest.Faction->FactionNameOverrides->NamePriority;
+			}
+			else if(InRequest.Faction->FactionNameOverrides->NamePriority == CurrentPriority)
+			{
+				if(FMath::RandBool())
+				{
+					NameComplexityToUse = InRequest.Faction->FactionNameOverrides->NameComplexityModifiers;
+					NameTableToUse = InRequest.Faction->FactionNameOverrides->Names;
+				}
+			}
+		}
+		
+		const int32 NameComplexity = RandomEntryWithWeight(NameComplexityToUse);
+		const TArray<FName>& Names = NameTableToUse->GetRowNames();
 		for(int32 i = 0; i < NameComplexity; i++)
 		{
-			const FNameDefinitionData* ChosenName = InDataMap->Names->Names->FindRow<FNameDefinitionData>(Names[FMath::RandRange(0, Names.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+			const FNameDefinitionData* ChosenName = NameTableToUse->FindRow<FNameDefinitionData>(Names[FMath::RandRange(0, Names.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
 			if(i != 0)
 			{
 				InRequest.Character.Name.Append(FString::Printf(TEXT(" %s"), *ChosenName->Name.ToString()));
@@ -108,11 +130,33 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 	
 	if(InRequest.Character.Surname.IsEmpty())
 	{
-		const int32 SurnameComplexity = RandomEntryWithWeight(InDataMap->Names->SurnameComplexityModifiers);
-		const TArray<FName>& Surnames = InDataMap->Names->Surnames->GetRowNames();
+		TMap<int32, float>& SurnameComplexityToUse = InDataMap->Names->SurnameComplexityModifiers;
+		const UDataTable* SurnameTableToUse = InDataMap->Names->Surnames;
+
+		int32 CurrentPriority = InDataMap->Names->SurnamePriority;
+		if(InRequest.Faction != nullptr && InRequest.Faction->FactionNameOverrides != nullptr)
+		{
+			if(InRequest.Faction->FactionNameOverrides->CallSignPriority > CurrentPriority)
+			{
+				SurnameComplexityToUse = InRequest.Faction->FactionNameOverrides->SurnameComplexityModifiers;
+				SurnameTableToUse = InRequest.Faction->FactionNameOverrides->Surnames;
+				CurrentPriority = InRequest.Faction->FactionNameOverrides->SurnamePriority;
+			}
+			else if(InRequest.Faction->FactionNameOverrides->SurnamePriority == CurrentPriority)
+			{
+				if(FMath::RandBool())
+				{
+					SurnameComplexityToUse = InRequest.Faction->FactionNameOverrides->SurnameComplexityModifiers;
+					SurnameTableToUse = InRequest.Faction->FactionNameOverrides->Surnames;
+				}
+			}
+		}
+		
+		const int32 SurnameComplexity = RandomEntryWithWeight(SurnameComplexityToUse);
+		const TArray<FName>& Surnames = SurnameTableToUse->GetRowNames();
 		for(int32 i = 0; i < SurnameComplexity; i++)
 		{
-			const FNameDefinitionData* ChosenName = InDataMap->Names->Surnames->FindRow<FNameDefinitionData>(Surnames[FMath::RandRange(0, Surnames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+			const FNameDefinitionData* ChosenName = SurnameTableToUse->FindRow<FNameDefinitionData>(Surnames[FMath::RandRange(0, Surnames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
 			if(i != 0)
 			{
 				InRequest.Character.Surname.Append(FString::Printf(TEXT("-%s"), *ChosenName->Name.ToString()));
@@ -126,37 +170,65 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 
 	if(InRequest.Character.CallSign.IsEmpty())
 	{
-		const int32 CallSignComplexity = RandomEntryWithWeight(InDataMap->Names->CallSignComplexityModifiers);
-		const TArray<FName>& CallSigns = InDataMap->Names->CallSignWords->GetRowNames();
+		const UNameDefinitionMap* CallSignsToUse = InDataMap->Names;
+		int32 CurrentPriority = CallSignsToUse->CallSignPriority;
+		if(InRequest.Faction != nullptr && InRequest.Faction->FactionNameOverrides != nullptr)
+		{
+			if(InRequest.Faction->FactionNameOverrides->CallSignPriority > CurrentPriority)
+			{
+				CallSignsToUse = InRequest.Faction->FactionNameOverrides;
+				CurrentPriority = InRequest.Faction->FactionNameOverrides->CallSignPriority;
+			}
+			else if(InRequest.Faction->FactionNameOverrides->CallSignPriority == CurrentPriority)
+			{
+				if(FMath::RandBool())
+				{
+					CallSignsToUse = InRequest.Faction->FactionNameOverrides;
+				}
+			}
+		}
+		
+		const int32 CallSignComplexity = RandomEntryWithWeight(CallSignsToUse->CallSignComplexityModifiers);
 		for(int32 i = 0; i < CallSignComplexity; i++)
 		{
-			const FNameDefinitionData* ChosenWord = InDataMap->Names->CallSignWords->FindRow<FNameDefinitionData>(CallSigns[FMath::RandRange(0, CallSigns.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
-			if(i != 0)
+			FString ChosenWord;
+			if(i == 0 && CallSignComplexity > 1 && !CallSignsToUse->CallSignAdjectives.IsEmpty() && FMath::RandBool())
 			{
-				InRequest.Character.CallSign.Append(ChosenWord->Name.ToString());
+				ChosenWord = CallSignsToUse->CallSignAdjectives[FMath::RandRange(0, CallSignsToUse->CallSignAdjectives.Num() - 1)].ToString();
 			}
 			else
 			{
-				InRequest.Character.CallSign = ChosenWord->Name.ToString();
+				ChosenWord = CallSignsToUse->CallSignNouns[FMath::RandRange(0, CallSignsToUse->CallSignNouns.Num() - 1)].ToString();
 			}
+			
+			InRequest.Character.CallSign.Append(ChosenWord);
 		}
 	}
 
 	if(InRequest.Character.ShipName.IsEmpty())
 	{
-		const TMap<int32, float>& ShipNameComplexityListToUse = InRequest.Faction != nullptr && !InRequest.Faction->NameComplexityModifiers.IsEmpty() ?
-			InRequest.Faction->NameComplexityModifiers : InDataMap->Names->ShipNameComplexityModifiers;
-		const UDataTable* ShipNamePrefixTableToUse = InRequest.Faction != nullptr && InRequest.Faction->ShipNamePrefixes != nullptr ?
-			InRequest.Faction->ShipNamePrefixes : InDataMap->Names->ShipNamePrefixes;
-		const UDataTable* ShipNameTableToUse = InRequest.Faction != nullptr && InRequest.Faction->ShipNameWords != nullptr ?
-			InRequest.Faction->ShipNameWords : InDataMap->Names->ShipNameWords;
+		const UNameDefinitionMap* ShipNamesToUse = InDataMap->Names;
+		int32 CurrentPriority = InDataMap->Names->ShipNamePriority;
+		if(InRequest.Faction != nullptr && InRequest.Faction->FactionNameOverrides != nullptr)
+		{
+			if(InRequest.Faction->FactionNameOverrides->ShipNamePriority > CurrentPriority)
+			{
+				ShipNamesToUse = InRequest.Faction->FactionNameOverrides;
+				CurrentPriority = InRequest.Faction->FactionNameOverrides->ShipNamePriority;
+			}
+			else if(InRequest.Faction->FactionNameOverrides->ShipNamePriority == CurrentPriority)
+			{
+				if(FMath::RandBool())
+				{
+					ShipNamesToUse = InRequest.Faction->FactionNameOverrides;
+				}
+			}
+		}
 		
-		const int32 ShipNameComplexity = RandomEntryWithWeight<int32>(ShipNameComplexityListToUse);
+		const int32 ShipNameComplexity = RandomEntryWithWeight<int32>(ShipNamesToUse->ShipNameComplexityModifiers);
+		const TArray<FName>& PrefixNames = ShipNamesToUse->ShipNamePrefixes->GetRowNames();
 
-		const TArray<FName>& PrefixNames = ShipNamePrefixTableToUse->GetRowNames();
-		const TArray<FName>& ShipNameWords = ShipNameTableToUse->GetRowNames();
-		
-		const FNameDefinitionData* ChosenPrefix = ShipNamePrefixTableToUse->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+		const FNameDefinitionData* ChosenPrefix = ShipNamesToUse->ShipNamePrefixes->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
 		InRequest.Character.ShipName.Append(ChosenPrefix->Name.ToString());
 		for(int32 i = 0; i < ShipNameComplexity; i++)
 		{
@@ -164,9 +236,18 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 			{
 				InRequest.CargoManifest.ShipName.Append(TEXT(" "));
 			}
+
+			FString ChosenWord;
+			if(i == 0 && ShipNameComplexity > 1 && !ShipNamesToUse->ShipNameAdjectives.IsEmpty() && FMath::RandBool())
+			{
+				ChosenWord = ShipNamesToUse->ShipNameAdjectives[FMath::RandRange(0, ShipNamesToUse->ShipNameAdjectives.Num() - 1)].ToString();
+			}
+			else
+			{
+				ChosenWord = ShipNamesToUse->ShipNameNouns[FMath::RandRange(0, ShipNamesToUse->ShipNameNouns.Num() - 1)].ToString();
+			}
 			
-			const FNameDefinitionData* ChosenWord = ShipNameTableToUse->FindRow<FNameDefinitionData>(ShipNameWords[FMath::RandRange(0, ShipNameWords.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
-			InRequest.Character.ShipName.Append(ChosenWord->Name.ToString());
+			InRequest.Character.ShipName.Append(ChosenWord);
 		}
 	}
 }
