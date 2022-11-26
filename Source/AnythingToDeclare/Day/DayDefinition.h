@@ -2,10 +2,9 @@
 
 #include "CoreMinimal.h"
 
-#include "AnythingToDeclare/Request/CustomsRequestModifier.h"
-
 #include <Engine/DataAsset.h>
 
+#include "GameplayTagContainer.h"
 #include "AnythingToDeclare/Request/CustomsRequestType.h"
 #include "DayDefinition.generated.h"
 
@@ -31,7 +30,7 @@ public:
 	TMap<ECustomsRequestType, float> CustomsRequestTypeWeight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TMap<ECustomsRequestModifier, float> CharacterModifiers;
+	TMap<FGameplayTag, float> CharacterModifiers;
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<int32, float> CargoManifestComplexityWeights;

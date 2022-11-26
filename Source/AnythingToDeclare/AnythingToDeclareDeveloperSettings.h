@@ -21,5 +21,8 @@ public:
 	UPROPERTY(EditAnywhere, config)
 	FSoftObjectPath CustomsDataMap;
 
+	UPROPERTY(EditAnywhere, config)
+	FSoftObjectPath GameplayTagContexts;
+
 	static UAnythingToDeclareDeveloperSettings* Get() { return GetMutableDefault<UAnythingToDeclareDeveloperSettings>(); }
 };

@@ -7,13 +7,26 @@
 #include "Request/CustomsRequestDataMap.h"
 #include "Loader.h"
 #include "Camera/CameraActor.h"
+#include "Dialogue/DialogueDataTableRow.h"
+#include "Dialogue/DialogueMessage.h"
 #include "Documents/Widgets/CodexWidget.h"
 #include "Documents/Widgets/CodexWidgetHelpers.h"
+#include "Documents/Widgets/ConversationWidget.h"
+#include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Request/CustomsRequestGenerator.h"
+#include "Settings/GameplayTagContextAsset.h"
 #include "Widgets/CustomsRequestCodexMonitorWidget.h"
 #include "Widgets/CustomsRequestConversationMonitorWidget.h"
 #include "Widgets/CustomsRequestMonitorWidget.h"
+
+namespace
+{
+	namespace AnythingToDeclareGameSatePrivates
+	{
+		const FString DialogueGenerationContextString(TEXT("AAnythingToDeclareGameState::GenerateMessageToSend"));
+	}
+}
 
 AAnythingToDeclareGameState::AAnythingToDeclareGameState(const FObjectInitializer& InInitializer)
 	: Super(InInitializer)
@@ -29,21 +42,18 @@ void AAnythingToDeclareGameState::BeginPlay()
 	if(const UAnythingToDeclareDeveloperSettings* DeveloperSettings = UAnythingToDeclareDeveloperSettings::Get())
 	{
 		FLoader::Load<UDayDefinitionMap>(DeveloperSettings->DayDefinitionDataMap, [this](UDayDefinitionMap& InLoadedDataMap)
-	   {
+		{
 			DayDataMap = &InLoadedDataMap;
-			if(CustomsDataMap != nullptr)
+			if(CustomsDataMap != nullptr && GameplayTagContexts != nullptr)
 			{
 				StartDay(1);
 			}
-	   });
-	}
+		});
 
-	if(const UAnythingToDeclareDeveloperSettings* DeveloperSettings = UAnythingToDeclareDeveloperSettings::Get())
-	{
 		FLoader::Load<UCustomsRequestDataMap>(DeveloperSettings->CustomsDataMap, [this](UCustomsRequestDataMap& InLoadedDataMap)
-	   {
+		{
 			CustomsDataMap = &InLoadedDataMap;
-			if(DayDataMap != nullptr)
+			if(DayDataMap != nullptr && GameplayTagContexts != nullptr)
 			{
 				StartDay(1);
 			}
@@ -52,7 +62,16 @@ void AAnythingToDeclareGameState::BeginPlay()
 				CodexWidgetHelper::GenerateCodexListFromSubLocations(CodexMonitorWidget->LocationCodex, InLoadedDataMap.SubLocations);
 				CodexWidgetHelper::GenerateCodexListFromCargoDefinitions(CodexMonitorWidget->CargoCodex, InLoadedDataMap.CargoTypes);
 			}
-	   });
+		});
+
+		FLoader::Load<UGameplayTagContextAsset>(DeveloperSettings->GameplayTagContexts, [this](UGameplayTagContextAsset& InLoadedContexts)
+		{
+			GameplayTagContexts = &InLoadedContexts;
+			if(DayDataMap != nullptr && CustomsDataMap != nullptr)
+			{
+				StartDay(1);
+			}
+		});
 	}
 
 	TArray<AActor*> WorldConsoles;	
@@ -143,7 +162,7 @@ void AAnythingToDeclareGameState::NextRequest()
 		}
 	}
 
-	CustomsRequestsHelper::GenerateRequest(CurrentRequest, CustomsDataMap, CurrentDayDefinition);
+	CustomsRequestsHelper::GenerateRequest(CurrentRequest, CustomsDataMap, GameplayTagContexts, CurrentDayDefinition);
 	if(const UCustomsRequestMonitorWidget* RequestMonitorWidget = CachedRequestMonitorWidget.Get())
 	{
 		if(RequestMonitorWidget->ManifestWidget != nullptr)
@@ -151,6 +170,8 @@ void AAnythingToDeclareGameState::NextRequest()
 			RequestMonitorWidget->ManifestWidget->SetCargoManifest(CurrentRequest.CargoManifest);
 		}
 	}
+
+	GenerateMessageToSend(GameplayTagContexts->GreetingTag, CurrentRequest.Character.CurrentTags, 1.0f, false);
 }
 
 void AAnythingToDeclareGameState::OnRequestApproved()
@@ -165,6 +186,156 @@ void AAnythingToDeclareGameState::OnRequestDenied()
 
 void AAnythingToDeclareGameState::OnQuestioned()
 {
+}
+
+void AAnythingToDeclareGameState::GetMessageDataFromTable(const FGameplayTag& MessageType,
+	const TArray<FGameplayTag>& InTags, const UDataTable* InTable, TArray<const FDialogueDataTableRow*>& OutData)
+{
+	if(InTable != nullptr)
+	{
+		TArray<FDialogueDataTableRow*> DialogueData;
+		InTable->GetAllRows<FDialogueDataTableRow>(AnythingToDeclareGameSatePrivates::DialogueGenerationContextString, DialogueData);
+
+		for(const FDialogueDataTableRow* DialogueDataRow : DialogueData)
+		{
+			if(DialogueDataRow->DialogueTag.MatchesTag(MessageType))
+			{
+				if(DialogueDataRow->Requirement.IsValid())
+				{
+					for(const FGameplayTag& InTag : InTags)
+					{
+						if(InTag.MatchesTag(DialogueDataRow->Requirement))
+						{
+							OutData.Add(DialogueDataRow);
+							break;
+						}
+					}
+				}
+				else
+				{
+					OutData.Add(DialogueDataRow);
+				}
+			}
+		}
+	}
+}
+
+void AAnythingToDeclareGameState::GenerateMessageToSend(const FGameplayTag& MessageType, const TArray<FGameplayTag>& InTags, const float TimeToSend,
+                                                        const bool IsPlayer)
+{
+	FGameplayTag MessageTagOverride = MessageType;
+
+	for(const FGameplayTag& InTag : InTags)
+	{
+		if(InTag.MatchesTag(MessageType))
+		{
+			MessageTagOverride = InTag;
+		}
+	}
+	
+	if(const UWorld* World = GetWorld())
+	{
+		FDialogueMessage MessageToSend;
+
+		TArray<const FDialogueDataTableRow*> FoundMatchingData;
+		// Get dialogue data specific to character appearance
+		if(!IsPlayer && CurrentRequest.CharacterAppearance != nullptr && CurrentRequest.CharacterAppearance->Dialogue != nullptr)
+		{
+			GetMessageDataFromTable(MessageTagOverride, InTags, CurrentRequest.CharacterAppearance->Dialogue, FoundMatchingData);
+		}
+		// If no character specific dialogue, use generic table
+		if(FoundMatchingData.IsEmpty())
+		{
+			GetMessageDataFromTable(MessageTagOverride, InTags, CustomsDataMap->DefaultDialogue, FoundMatchingData);
+		}
+
+		if(!FoundMatchingData.IsEmpty())
+		{
+			FDialogueMessage Message;
+
+			// Compile a list of all tag requirements that matched
+			TArray<const FGameplayTag*> TagsToPickFrom;
+			for(const FDialogueDataTableRow* DialogueDataTableRow : FoundMatchingData)
+			{
+				if(DialogueDataTableRow->Requirement.IsValid())
+				{
+					TagsToPickFrom.AddUnique(&DialogueDataTableRow->Requirement);
+				}
+			}
+
+			// If there were some dialogue options with tag requirements, pick one to use and filter out all dialogue that doesn't have said requirement
+			if(!TagsToPickFrom.IsEmpty())
+			{
+				if(const FGameplayTag* TagFilter = TagsToPickFrom[FMath::RandRange(0, TagsToPickFrom.Num() - 1)]; TagFilter != nullptr)
+				{
+					for(int32 i = FoundMatchingData.Num() - 1; i > 0; i--)
+					{
+						if(const FDialogueDataTableRow* DialogueDataTableRow = FoundMatchingData[i]; !DialogueDataTableRow->Requirement.MatchesTagExact(*TagFilter))
+						{
+							FoundMatchingData.Remove(DialogueDataTableRow);
+						}
+					}
+				}
+			}
+
+			// Finally, pick a dialogue option to use
+			if(!FoundMatchingData.IsEmpty())
+			{
+				if(const FDialogueDataTableRow* ChosenDialogue = FoundMatchingData[FMath::RandRange(0, FoundMatchingData.Num() - 1)]; ChosenDialogue != nullptr)
+				{
+					Message.DialogueText = FText::FromString(ChosenDialogue->Dialogue);
+					if(!IsPlayer)
+					{
+						CurrentRequest.Character.CurrentTags.AddUnique(ChosenDialogue->DialogueTag);
+					}
+				}
+			}
+
+			if(IsPlayer && CustomsDataMap != nullptr && CustomsDataMap->PlayerCharacter != nullptr)
+			{
+				Message.DialogueIcon = CustomsDataMap->PlayerCharacter->Portrait;
+				Message.DisplayName = FText::FromString(CustomsDataMap->PlayerCharacter->Name);
+			}
+			else
+			{
+				Message.DialogueIcon = CurrentRequest.Character.Portrait;
+				Message.DisplayName = FText::FromString(CurrentRequest.Character.Name);
+			}
+
+			Message.IsPlayer = IsPlayer;
+			
+			if(TimeToSend > 0.0f)
+			{
+				FTimerManager& TimerManager = World->GetTimerManager();
+				FTimerHandle MessageHandle;
+				const FTimerDelegate MessageDelegate = FTimerDelegate::CreateLambda(
+					[WeakThis = TWeakObjectPtr<AAnythingToDeclareGameState>(this), Message]()
+					{
+						if (const AAnythingToDeclareGameState* StrongThis = WeakThis.Get())
+						{
+							StrongThis->SendMessage(Message);
+						}
+					});
+				TimerManager.SetTimer(MessageHandle, MessageDelegate, TimeToSend, false);
+				ConversationTimerHandles.Add(MessageHandle);
+			}
+			else
+			{
+				SendMessage(Message);
+			}
+		}
+	}
+}
+
+void AAnythingToDeclareGameState::SendMessage(const FDialogueMessage& InMessage) const
+{
+	if(const UCustomsRequestConversationMonitorWidget* ConversationMonitorWidget = CachedConversationMonitorWidget.Get())
+	{
+		if(ConversationMonitorWidget->ConversationWidget != nullptr)
+		{
+			ConversationMonitorWidget->ConversationWidget->AddDialogue(InMessage.DialogueText, InMessage.DisplayName, InMessage.DialogueIcon, InMessage.IsPlayer);
+		}
+	}
 }
 
 void AAnythingToDeclareGameState::HandleRequest(const ECustomsRequestOutcome& InOutcome)

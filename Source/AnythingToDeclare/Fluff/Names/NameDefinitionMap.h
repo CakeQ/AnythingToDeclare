@@ -32,6 +32,9 @@ public:
 	TMap<int32, float> NameComplexityModifiers;
 
 	UPROPERTY(EditDefaultsOnly)
+	TMap<int32, float> SurnameComplexityModifiers;
+
+	UPROPERTY(EditDefaultsOnly)
 	TMap<int32, float> CallSignComplexityModifiers;
 	
 	UPROPERTY(EditDefaultsOnly)

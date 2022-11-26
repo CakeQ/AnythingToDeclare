@@ -9,6 +9,7 @@
 
 #include "CustomsRequestDataMap.generated.h"
 
+class UCharacterDefinitionAsset;
 class UShipClassDefinition;
 class UDataTable;
 class URegionDefinition;
@@ -49,6 +50,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	USubLocationDefinition* DefaultWorkLocation;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UCharacterDefinitionAsset* PlayerCharacter;
 	
 	UPROPERTY(EditDefaultsOnly)
 	UDataTable* DefaultDialogue;

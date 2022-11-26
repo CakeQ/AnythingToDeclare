@@ -6,11 +6,14 @@
 
 #include "Console/GenericConsole.h"
 #include "Day/DayDefinition.h"
+#include "Dialogue/DialogueMessage.h"
 #include "GameFramework/GameStateBase.h"
 #include "Request/CustomsRequest.h"
 
 #include "AnythingToDeclareGameState.generated.h"
 
+struct FDialogueDataTableRow;
+class UGameplayTagContextAsset;
 class UCustomsRequestConversationMonitorWidget;
 class UCustomsRequestCodexMonitorWidget;
 class UCodexWidget;
@@ -48,6 +51,11 @@ public:
 
 	UFUNCTION()
 	void OnQuestioned();
+
+	static void GetMessageDataFromTable(const FGameplayTag& MessageType, const TArray<FGameplayTag>& InTags, const UDataTable* InTable, TArray<const
+		                                    FDialogueDataTableRow*>& OutData);
+	void GenerateMessageToSend(const FGameplayTag& MessageType, const TArray<FGameplayTag>& InTags, const float TimeToSend, const bool IsPlayer);
+	void SendMessage(const FDialogueMessage& InMessage) const;
 	
 	UFUNCTION()
 	AActor* CycleCameraNext();
@@ -77,6 +85,9 @@ private:
 	UCustomsRequestDataMap* CustomsDataMap;
 
 	UPROPERTY()
+	UGameplayTagContextAsset* GameplayTagContexts;
+
+	UPROPERTY()
 	TWeakObjectPtr<UCustomsRequestMonitorWidget> CachedRequestMonitorWidget;
 
 	UPROPERTY()
@@ -96,4 +107,7 @@ private:
 	
 	UPROPERTY()
 	TArray<FCustomsRequest> ProcessedRequests;
+
+	UPROPERTY()
+	TArray<FTimerHandle> ConversationTimerHandles;
 };

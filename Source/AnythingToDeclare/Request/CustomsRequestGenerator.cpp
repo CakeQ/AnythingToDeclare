@@ -10,6 +10,7 @@
 #include "AnythingToDeclare/Fluff/Location/LocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Names/NameDefinitionMap.h"
+#include "AnythingToDeclare/Settings/GameplayTagContextAsset.h"
 
 namespace
 {
@@ -19,7 +20,8 @@ namespace
 	}
 }
 
-void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition)
+void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap,
+	const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition)
 {
 	FillFromCharacterAppearance(InRequest);
 	if(InRequest.Ship == nullptr)
@@ -30,12 +32,147 @@ void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UC
 	{
 		InRequest.Faction = RandomEntryWithWeight(InDataMap->SelectableFactions);
 	}
+	GenerateCharacter(InRequest, InDataMap, InGameplayTagContexts, InDayDefinition);
 	GenerateCargoRoute(InRequest, InDataMap, InDayDefinition);
 	GenerateCargoManifest(InRequest, InDataMap, InDayDefinition);
 }
 
+void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap,
+	const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition)
+{
+	if(InRequest.CharacterAppearance == nullptr && InRequest.Character.CurrentTags.IsEmpty())
+	{
+		TArray<TPair<FGameplayTag, float>> ShuffledCharacterModifiers = InDayDefinition->CharacterModifiers.Array();
+		const int32 NumShuffles = ShuffledCharacterModifiers.Num() - 1;
+		for(int32 i = 0 ; i < NumShuffles ; ++i)
+		{
+			const int32 SwapIdx = FMath::RandRange(i, NumShuffles);
+			ShuffledCharacterModifiers.Swap(i, SwapIdx);
+		}
+		
+		for(const TPair<FGameplayTag, float>& TagChance : ShuffledCharacterModifiers)
+		{
+			// TODO: Disallow if existing chosen tags prevent this one.
+			if(FMath::Rand() >= TagChance.Value)
+			{
+				InRequest.Character.CurrentTags.Add(TagChance.Key);
+			}
+		}
+	}
+		
+	if(InRequest.Character.Age == 0)
+	{
+		InRequest.Character.Age = FMath::RandRange(20, 70);
+	}
+	if(InRequest.Character.CryogenicAge == 0)
+	{
+		if(InRequest.Character.CurrentTags.Contains(InGameplayTagContexts->CryogenicTag))
+		{
+			InRequest.Character.CryogenicAge = FMath::Min(InRequest.Character.Age + FMath::RandRange(1, 125), 125);
+		}
+		else
+		{
+			InRequest.Character.CryogenicAge = InRequest.Character.Age;
+		}
+	}
+
+	if(InRequest.Character.Portrait == nullptr)
+	{
+		// TODO
+		// InRequest.Character.Portrait = GeneratePortrait();
+	}
+	
+	if(InRequest.Character.FacePortrait == nullptr)
+	{
+		// TODO
+		// InRequest.Character.FacePortrait = GenerateFacePortrait();
+	}
+
+	if(InRequest.Character.Name.IsEmpty())
+	{
+		const int32 NameComplexity = RandomEntryWithWeight(InDataMap->Names->NameComplexityModifiers);
+		const TArray<FName>& Names = InDataMap->Names->Names->GetRowNames();
+		for(int32 i = 0; i < NameComplexity; i++)
+		{
+			const FNameDefinitionData* ChosenName = InDataMap->Names->Names->FindRow<FNameDefinitionData>(Names[FMath::RandRange(0, Names.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+			if(i != 0)
+			{
+				InRequest.Character.Name.Append(FString::Printf(TEXT(" %s"), *ChosenName->Name.ToString()));
+			}
+			else
+			{
+				InRequest.Character.Name = ChosenName->Name.ToString();
+			}
+		}
+	}
+	
+	if(InRequest.Character.Surname.IsEmpty())
+	{
+		const int32 SurnameComplexity = RandomEntryWithWeight(InDataMap->Names->SurnameComplexityModifiers);
+		const TArray<FName>& Surnames = InDataMap->Names->Surnames->GetRowNames();
+		for(int32 i = 0; i < SurnameComplexity; i++)
+		{
+			const FNameDefinitionData* ChosenName = InDataMap->Names->Surnames->FindRow<FNameDefinitionData>(Surnames[FMath::RandRange(0, Surnames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+			if(i != 0)
+			{
+				InRequest.Character.Surname.Append(FString::Printf(TEXT("-%s"), *ChosenName->Name.ToString()));
+			}
+			else
+			{
+				InRequest.Character.Surname = ChosenName->Name.ToString();
+			}
+		}
+	}
+
+	if(InRequest.Character.CallSign.IsEmpty())
+	{
+		const int32 CallSignComplexity = RandomEntryWithWeight(InDataMap->Names->CallSignComplexityModifiers);
+		const TArray<FName>& CallSigns = InDataMap->Names->CallSignWords->GetRowNames();
+		for(int32 i = 0; i < CallSignComplexity; i++)
+		{
+			const FNameDefinitionData* ChosenWord = InDataMap->Names->CallSignWords->FindRow<FNameDefinitionData>(CallSigns[FMath::RandRange(0, CallSigns.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+			if(i != 0)
+			{
+				InRequest.Character.CallSign.Append(ChosenWord->Name.ToString());
+			}
+			else
+			{
+				InRequest.Character.CallSign = ChosenWord->Name.ToString();
+			}
+		}
+	}
+
+	if(InRequest.Character.ShipName.IsEmpty())
+	{
+		const TMap<int32, float>& ShipNameComplexityListToUse = InRequest.Faction != nullptr && !InRequest.Faction->NameComplexityModifiers.IsEmpty() ?
+			InRequest.Faction->NameComplexityModifiers : InDataMap->Names->ShipNameComplexityModifiers;
+		const UDataTable* ShipNamePrefixTableToUse = InRequest.Faction != nullptr && InRequest.Faction->ShipNamePrefixes != nullptr ?
+			InRequest.Faction->ShipNamePrefixes : InDataMap->Names->ShipNamePrefixes;
+		const UDataTable* ShipNameTableToUse = InRequest.Faction != nullptr && InRequest.Faction->ShipNameWords != nullptr ?
+			InRequest.Faction->ShipNameWords : InDataMap->Names->ShipNameWords;
+		
+		const int32 ShipNameComplexity = RandomEntryWithWeight<int32>(ShipNameComplexityListToUse);
+
+		const TArray<FName>& PrefixNames = ShipNamePrefixTableToUse->GetRowNames();
+		const TArray<FName>& ShipNameWords = ShipNameTableToUse->GetRowNames();
+		
+		const FNameDefinitionData* ChosenPrefix = ShipNamePrefixTableToUse->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+		InRequest.Character.ShipName.Append(ChosenPrefix->Name.ToString());
+		for(int32 i = 0; i < ShipNameComplexity; i++)
+		{
+			if(!InRequest.CargoManifest.ShipName.IsEmpty())
+			{
+				InRequest.CargoManifest.ShipName.Append(TEXT(" "));
+			}
+			
+			const FNameDefinitionData* ChosenWord = ShipNameTableToUse->FindRow<FNameDefinitionData>(ShipNameWords[FMath::RandRange(0, ShipNameWords.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
+			InRequest.Character.ShipName.Append(ChosenWord->Name.ToString());
+		}
+	}
+}
+
 void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap,
-	const UDayDefinitionAsset* InDayDefinition)
+                                               const UDayDefinitionAsset* InDayDefinition)
 {
 	USubLocationDefinition* WorkLocation = InDayDefinition->WorkLocationOverride != nullptr ? InDayDefinition->WorkLocationOverride : InDataMap->DefaultWorkLocation;
 	if(InRequest.RequestType == ECustomsRequestType::None)
@@ -104,30 +241,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 {
 	if(InRequest.CargoManifest.ShipName.IsEmpty())
 	{
-		const TMap<int32, float>& ShipNameComplexityListToUse = InRequest.Faction != nullptr && !InRequest.Faction->NameComplexityModifiers.IsEmpty() ?
-			InRequest.Faction->NameComplexityModifiers : InDataMap->Names->ShipNameComplexityModifiers;
-		const UDataTable* ShipNamePrefixTableToUse = InRequest.Faction != nullptr && InRequest.Faction->ShipNamePrefixes != nullptr ?
-			InRequest.Faction->ShipNamePrefixes : InDataMap->Names->ShipNamePrefixes;
-		const UDataTable* ShipNameTableToUse = InRequest.Faction != nullptr && InRequest.Faction->ShipNameWords != nullptr ?
-			InRequest.Faction->ShipNameWords : InDataMap->Names->ShipNameWords;
-		
-		const int32 ShipNameComplexity = RandomEntryWithWeight<int32>(ShipNameComplexityListToUse);
-
-		const TArray<FName>& PrefixNames = ShipNamePrefixTableToUse->GetRowNames();
-		const TArray<FName>& ShipNameWords = ShipNameTableToUse->GetRowNames();
-		
-		const FNameDefinitionData* ChosenPrefix = ShipNamePrefixTableToUse->FindRow<FNameDefinitionData>(PrefixNames[FMath::RandRange(0, PrefixNames.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
-		InRequest.CargoManifest.ShipName.Append(ChosenPrefix->Name.ToString());
-		for(int32 i = 0; i < ShipNameComplexity; i++)
-		{
-			if(!InRequest.CargoManifest.ShipName.IsEmpty())
-			{
-				InRequest.CargoManifest.ShipName.Append(TEXT(" "));
-			}
-			
-			const FNameDefinitionData* ChosenWord = ShipNameTableToUse->FindRow<FNameDefinitionData>(ShipNameWords[FMath::RandRange(0, ShipNameWords.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
-			InRequest.CargoManifest.ShipName.Append(ChosenWord->Name.ToString());
-		}
+		InRequest.CargoManifest.ShipName = InRequest.Character.ShipName;
 	}
 
 	if(InRequest.OriginLocation != nullptr)
@@ -197,12 +311,6 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 	}
 }
 
-void CustomsRequestsHelper::GenerateCargoFromParameters(FCargoManifest& InManifest,
-	const TMap<ECustomsRequestModifier, float>& RequestModifiers, const USubLocationDefinition* Origin,
-	const USubLocationDefinition* Destination)
-{	
-}
-
 void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InRequest)
 {
 	if(InRequest.CharacterAppearance != nullptr)
@@ -211,6 +319,32 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 		InRequest.RequestType = InRequest.CharacterAppearance->CustomsRequestType;
 		InRequest.Faction = InRequest.CharacterAppearance->Character->Faction;
 		InRequest.Ship = InRequest.CharacterAppearance->Character->ShipClass;
+
+		InRequest.Character.Age = InRequest.CharacterAppearance->Character->Age;
+		InRequest.Character.Name = InRequest.CharacterAppearance->Character->Name;
+		InRequest.Character.Portrait = InRequest.CharacterAppearance->Character->Portrait;
+		InRequest.Character.Surname = InRequest.CharacterAppearance->Character->Surname;
+		InRequest.Character.CallSign = InRequest.CharacterAppearance->Character->CallSign;
+		InRequest.Character.CryogenicAge = InRequest.CharacterAppearance->Character->CryogenicAge;
+		InRequest.Character.FacePortrait = InRequest.CharacterAppearance->Character->FacePortrait;
+		InRequest.Character.ShipName = InRequest.CharacterAppearance->Character->ShipName;
+
+		TArray<TPair<FGameplayTag, float>> ShuffledCharacterModifiers = InRequest.CharacterAppearance->CharacterModifiers.Array();
+		const int32 NumShuffles = ShuffledCharacterModifiers.Num() - 1;
+		for(int32 i = 0 ; i < NumShuffles ; ++i)
+		{
+			const int32 SwapIdx = FMath::RandRange(i, NumShuffles);
+			ShuffledCharacterModifiers.Swap(i, SwapIdx);
+		}
+		
+		for(const TPair<FGameplayTag, float>& TagChance : ShuffledCharacterModifiers)
+		{
+			// TODO: Disallow if existing chosen tags prevent this one.
+			if(FMath::Rand() >= TagChance.Value)
+			{
+				InRequest.Character.CurrentTags.Add(TagChance.Key);
+			}
+		}
 		
 		if(USubLocationDefinition* SubLocationDefinition = InRequest.CharacterAppearance->OriginLocation)
 		{
@@ -233,6 +367,5 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 				InRequest.CargoManifest.DestinationLocation = LocationDefinition->Name;
 			}
 		}
-		GenerateCargoFromParameters(InRequest.CargoManifest, InRequest.CharacterAppearance->CharacterModifiers, InRequest.CharacterAppearance->OriginLocation, InRequest.CharacterAppearance->DestinationLocation);
 	}
 }

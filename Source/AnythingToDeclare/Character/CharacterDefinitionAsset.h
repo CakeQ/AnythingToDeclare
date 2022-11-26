@@ -38,9 +38,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UFactionDefinition* Faction;
 	
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
-	FSoftObjectPath Portrait;
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstance* Portrait;
 	
-	UPROPERTY(EditDefaultsOnly, meta=(MetaClass="/Script/Engine.Texture"))
-	FSoftObjectPath FacePortrait;
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstance* FacePortrait;
 };

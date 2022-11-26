@@ -6,6 +6,7 @@
 
 #include "../Character/CharacterAppearanceDataAsset.h"
 #include "../Documents/CargoManifest.h"
+#include "AnythingToDeclare/Character/CharacterAppearance.h"
 #include "AnythingToDeclare/Fluff/Ship/ShipClassDefinition.h"
 
 #include "CustomsRequest.generated.h"
@@ -49,6 +50,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere)
 	FCargoManifest CargoManifest;
+	
+	UPROPERTY(VisibleAnywhere)
+	FCharacterAppearance Character;
 	
 	UPROPERTY(VisibleAnywhere)
 	ECustomsRequestType RequestType;
