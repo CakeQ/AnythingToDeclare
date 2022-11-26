@@ -299,7 +299,7 @@ void AAnythingToDeclareGameState::GenerateMessageToSend(const FGameplayTag& Mess
 			else
 			{
 				Message.DialogueIcon = CurrentRequest.Character.Portrait;
-				Message.DisplayName = FText::FromString(CurrentRequest.Character.Name);
+				Message.DisplayName = FText::FromString(CurrentRequest.Character.CallSign);
 			}
 
 			Message.IsPlayer = IsPlayer;
