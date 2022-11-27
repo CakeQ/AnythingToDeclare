@@ -30,10 +30,19 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 {
 	CargoWeights.Empty();
 	ContrabandWeights.Empty();
+	RegionWeights.Empty();
 	LocationWeights.Empty();
 	SubLocationWeights.Empty();
 	SelectableFactions.Empty();
-
+	SelectableShipClasses.Empty();
+	
+	CargoTypes.Empty();
+	Regions.Empty();
+	Locations.Empty();
+	SubLocations.Empty();
+	Factions.Empty();
+	ShipClasses.Empty();
+	
 	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	const IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 	
@@ -56,6 +65,7 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 					{
 						CargoWeights.Add(CargoTypeDefinition, CargoTypeDefinition->SelectionWeight + (CargoTypeDefinition->Category != nullptr ? CargoTypeDefinition->Category->SelectionWeight : 0.0f));
 					}
+					CargoTypes.Add(CargoTypeDefinition);
 				}
 			}
 			else if(URegionDefinition* RegionDefinition = Cast<URegionDefinition>(AssetPtr))
@@ -63,6 +73,7 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 				if(RegionDefinition != nullptr)
 				{
 					RegionWeights.Add(RegionDefinition, RegionDefinition->PopularityModifier);
+					Regions.Add(RegionDefinition);
 				}
 			}
 			else if(ULocationDefinition* LocationDefinition = Cast<ULocationDefinition>(AssetPtr))
@@ -71,6 +82,7 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 				{
 					LocationWeights.Add(LocationDefinition, 
 						LocationDefinition->PopularityModifier + (LocationDefinition->Region != nullptr ? LocationDefinition->Region->PopularityModifier : 0.0f));
+					Locations.Add(LocationDefinition);
 				}
 			}
 			else if(USubLocationDefinition* SubLocationDefinition = Cast<USubLocationDefinition>(AssetPtr))
@@ -81,20 +93,29 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 						SubLocationDefinition->PopularityModifier
 						+ (SubLocationDefinition->Location != nullptr ? SubLocationDefinition->Location->PopularityModifier
 							+ (SubLocationDefinition->Location->Region != nullptr ? SubLocationDefinition->Location->Region->PopularityModifier : 0.0f) : 0.0f));
+					SubLocations.Add(SubLocationDefinition);
 				}
 			}
 			else if(UFactionDefinition* FactionDefinition = Cast<UFactionDefinition>(AssetPtr))
 			{
-				if(FactionDefinition != nullptr && FactionDefinition->RandomlySelectable)
+				if(FactionDefinition != nullptr)
 				{
-					SelectableFactions.Add(FactionDefinition, FactionDefinition->AppearanceWeight);
+					if(FactionDefinition->RandomlySelectable)
+					{
+						SelectableFactions.Add(FactionDefinition, FactionDefinition->AppearanceWeight);
+					}
+					Factions.Add(FactionDefinition);
 				}
 			}
 			else if(UShipClassDefinition* ShipClassDefinition = Cast<UShipClassDefinition>(AssetPtr))
 			{
-				if(ShipClassDefinition != nullptr && ShipClassDefinition->RandomlySelectable)
+				if(ShipClassDefinition != nullptr)
 				{
-					SelectableShipClasses.Add(ShipClassDefinition, ShipClassDefinition->AppearanceWeight);
+					if(ShipClassDefinition->RandomlySelectable)
+					{
+						SelectableShipClasses.Add(ShipClassDefinition, ShipClassDefinition->AppearanceWeight);
+					}
+					ShipClasses.Add(ShipClassDefinition);
 				}
 			}
 		}
