@@ -47,7 +47,12 @@ void UCustomsRequestDataMap::RegenerateDataLists()
 	const IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 	
 	TArray<FAssetData> DataAssets;
-	AssetRegistry.GetAssetsByPath(FName(DataPath.Path), DataAssets, true);
+	TArray<FName> PathsToLoad;
+	for(auto& [Path] : DataPaths)
+	{
+		PathsToLoad.Add(FName(Path));
+	}
+	AssetRegistry.GetAssetsByPaths(PathsToLoad, DataAssets, true);
 
 	for (const FAssetData& Asset : DataAssets)
 	{

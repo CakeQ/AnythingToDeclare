@@ -354,11 +354,14 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 	}
 
 	TMap<UCargoTypeDefinition*, float> MutualCargoTypes;
-	for(UCargoTypeDefinition* SuppliedCargoType : InRequest.OriginLocation->SuppliedCargoTypes)
+	if(InRequest.OriginLocation != nullptr && InRequest.DestinationLocation != nullptr)
 	{
-		if(InRequest.DestinationLocation->SuppliedCargoTypes.Contains(SuppliedCargoType))
+		for(UCargoTypeDefinition* SuppliedCargoType : InRequest.OriginLocation->SuppliedCargoTypes)
 		{
-			MutualCargoTypes.Add(SuppliedCargoType, SuppliedCargoType->SelectionWeight + (SuppliedCargoType->Category != nullptr ? SuppliedCargoType->Category->SelectionWeight : 0.0f));
+			if(InRequest.DestinationLocation->SuppliedCargoTypes.Contains(SuppliedCargoType))
+			{
+				MutualCargoTypes.Add(SuppliedCargoType, SuppliedCargoType->SelectionWeight + (SuppliedCargoType->Category != nullptr ? SuppliedCargoType->Category->SelectionWeight : 0.0f));
+			}
 		}
 	}
 

@@ -43,7 +43,7 @@ public:
 	TArray<UCargoTypeDefinition*> CargoTypes;
 
 	UPROPERTY(EditDefaultsOnly)
-	FDirectoryPath DataPath;
+	TArray<FDirectoryPath> DataPaths;
 
 	UPROPERTY()
 	TMap<UCargoTypeDefinition*, float> CargoWeights;
