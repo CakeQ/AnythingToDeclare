@@ -53,7 +53,7 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 		for(const TPair<FGameplayTag, float>& TagChance : ShuffledCharacterModifiers)
 		{
 			// TODO: Disallow if existing chosen tags prevent this one.
-			if(FMath::Rand() >= TagChance.Value)
+			if(FMath::RandRange(0.0f, 1.0f) >= TagChance.Value)
 			{
 				InRequest.Character.CurrentTags.Add(TagChance.Key);
 			}
@@ -431,7 +431,7 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 		for(const TPair<FGameplayTag, float>& TagChance : ShuffledCharacterModifiers)
 		{
 			// TODO: Disallow if existing chosen tags prevent this one.
-			if(FMath::Rand() >= TagChance.Value)
+			if(FMath::RandRange(0.0f, 1.0f) >= TagChance.Value)
 			{
 				InRequest.Character.CurrentTags.Add(TagChance.Key);
 			}
