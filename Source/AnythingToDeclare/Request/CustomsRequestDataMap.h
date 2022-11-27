@@ -40,7 +40,7 @@ public:
 	UNameDefinitionMap* Names;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<UCargoTypeDefinition*> CargoTypes;
+	FDirectoryPath DataPath;
 
 	UPROPERTY()
 	TMap<UCargoTypeDefinition*, float> CargoWeights;
@@ -56,21 +56,6 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UDataTable* DefaultDialogue;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TArray<URegionDefinition*> Regions;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TArray<ULocationDefinition*> Locations;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TArray<USubLocationDefinition*> SubLocations;
-
-	UPROPERTY(EditDefaultsOnly)
-	TArray<UFactionDefinition*> Factions;
-
-	UPROPERTY(EditDefaultsOnly)
-	TArray<UShipClassDefinition*> ShipClasses;
 	
 	UPROPERTY()
 	TMap<URegionDefinition*, float> RegionWeights;
