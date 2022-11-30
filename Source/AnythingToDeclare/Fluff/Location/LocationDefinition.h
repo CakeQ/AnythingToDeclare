@@ -42,6 +42,9 @@ public:
 	FString Name;
 
 	UPROPERTY(EditDefaultsOnly)
+	TArray<FString> NameTypos;
+	
+	UPROPERTY(EditDefaultsOnly)
 	FString Description;
 	
 	UPROPERTY(EditDefaultsOnly)

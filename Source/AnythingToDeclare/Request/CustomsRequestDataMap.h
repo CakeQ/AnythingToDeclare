@@ -35,6 +35,8 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
 	void RegenerateDataLists();
+
+	void OnDataAssetLoaded(UObject* LoadedAsset);
 	
 	UPROPERTY(EditDefaultsOnly)
 	UNameDefinitionMap* Names;
