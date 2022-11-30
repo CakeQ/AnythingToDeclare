@@ -15,7 +15,7 @@ namespace CustomsRequestsHelper
 	void GenerateRequest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition);
 	void GenerateCharacter(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition);
 	void GenerateCargoRoute(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition);
-	void GenerateCargoManifest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition);
+	void GenerateCargoManifest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition);
 	
 	void FillFromCharacterAppearance(FCustomsRequest& InRequest);
 	

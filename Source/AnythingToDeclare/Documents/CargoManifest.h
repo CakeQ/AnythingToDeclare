@@ -7,6 +7,8 @@
 
 #include "CargoManifest.generated.h"
 
+enum class EGameplayTagModifier : uint8;
+
 USTRUCT(BlueprintType)
 struct FCargoManifestEntry
 {
@@ -15,19 +17,23 @@ public:
 
 	FCargoManifestEntry()
 		: CargoType(nullptr)
+		, DisplayWeight(0.0f)
 		, TotalUnits(0)
-	{
-	}
-	
-	FCargoManifestEntry(UCargoTypeDefinition* InCargoType, const int32 InTotalUnits)
-		: CargoType(InCargoType)
-		, TotalUnits(InTotalUnits)
 	{
 	}
 	
 	UPROPERTY(EditAnywhere)
 	UCargoTypeDefinition* CargoType;
 
+	UPROPERTY(EditAnywhere)
+	FString DisplayName;
+
+	UPROPERTY(EditAnywhere)
+	float DisplayWeight;
+	
+	UPROPERTY(EditAnywhere)
+	TArray<EGameplayTagModifier> Modifiers;
+	
 	UPROPERTY(EditAnywhere)
 	int32 TotalUnits;
 };

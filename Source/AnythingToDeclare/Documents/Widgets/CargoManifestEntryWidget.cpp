@@ -9,7 +9,7 @@ void UCargoManifestEntryWidget::SetCargoManifestEntry(const FCargoManifestEntry&
 	{
 		if(CargoTypeName != nullptr)
 		{
-			CargoTypeName->SetText(FText::FromString(InManifestEntry.CargoType->Name));
+			CargoTypeName->SetText(FText::FromString(InManifestEntry.DisplayName));
 		}
 	
 		if(CargoUnits != nullptr)

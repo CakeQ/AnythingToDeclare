@@ -2,3 +2,15 @@
 
 
 #include "GameplayTagContextAsset.h"
+
+const FGameplayTagContextData* UGameplayTagContextAsset::FindTagContextData(const FGameplayTag& RequestTag) const
+{
+	for(const FGameplayTagContextData& TagContextData : RequestModifiers)
+	{
+		if(TagContextData.Tag.MatchesTag(RequestTag))
+		{
+			return &TagContextData;
+		}
+	}
+	return nullptr;
+}

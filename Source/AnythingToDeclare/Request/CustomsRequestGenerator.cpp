@@ -11,6 +11,9 @@
 #include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Names/NameDefinitionMap.h"
 #include "AnythingToDeclare/Settings/GameplayTagContextAsset.h"
+#include "Logging/LogMacros.h"
+
+DEFINE_LOG_CATEGORY_STATIC(CustomsRequestsHelperLog, Log, All)
 
 namespace
 {
@@ -34,7 +37,7 @@ void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UC
 	}
 	GenerateCharacter(InRequest, InDataMap, InGameplayTagContexts, InDayDefinition);
 	GenerateCargoRoute(InRequest, InDataMap, InDayDefinition);
-	GenerateCargoManifest(InRequest, InDataMap, InDayDefinition);
+	GenerateCargoManifest(InRequest, InDataMap, InGameplayTagContexts, InDayDefinition);
 }
 
 void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap,
@@ -66,13 +69,14 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 	}
 	if(InRequest.Character.CryogenicAge == 0)
 	{
-		if(InRequest.Character.CurrentTags.Contains(InGameplayTagContexts->CryogenicTag))
+		InRequest.Character.CryogenicAge = InRequest.Character.Age;
+		for(const FGameplayTag& Tag : InRequest.Character.CurrentTags)
 		{
-			InRequest.Character.CryogenicAge = FMath::Min(InRequest.Character.Age + FMath::RandRange(1, 125), 125);
-		}
-		else
-		{
-			InRequest.Character.CryogenicAge = InRequest.Character.Age;
+			if(InGameplayTagContexts->RequestModifiers.FindByPredicate([Tag](const FGameplayTagContextData& Iterator){ return Iterator.Tag.MatchesTag(Tag) && Iterator.Context == EGameplayTagContext::IDAgeCryo;}))
+			{
+				InRequest.Character.CryogenicAge = FMath::Min(InRequest.Character.Age + FMath::RandRange(1, 125), 125);
+				break;
+			}
 		}
 	}
 
@@ -328,7 +332,7 @@ void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const
 	}
 }
 
-void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UDayDefinitionAsset* InDayDefinition)
+void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition)
 {
 	if(InRequest.CargoManifest.ShipName.IsEmpty())
 	{
@@ -354,54 +358,162 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 	}
 
 	TMap<UCargoTypeDefinition*, float> MutualCargoTypes;
+	TMap<UCargoTypeDefinition*, float> MutualContraband;
 	if(InRequest.OriginLocation != nullptr && InRequest.DestinationLocation != nullptr)
 	{
 		for(UCargoTypeDefinition* SuppliedCargoType : InRequest.OriginLocation->SuppliedCargoTypes)
 		{
 			if(InRequest.DestinationLocation->SuppliedCargoTypes.Contains(SuppliedCargoType))
 			{
-				MutualCargoTypes.Add(SuppliedCargoType, SuppliedCargoType->SelectionWeight + (SuppliedCargoType->Category != nullptr ? SuppliedCargoType->Category->SelectionWeight : 0.0f));
+				if(SuppliedCargoType->IsIllegal)
+				{
+					MutualContraband.Add(SuppliedCargoType, SuppliedCargoType->SelectionWeight + (SuppliedCargoType->Category != nullptr ? SuppliedCargoType->Category->SelectionWeight : 0.0f));
+				}
+				else
+				{
+					MutualCargoTypes.Add(SuppliedCargoType, SuppliedCargoType->SelectionWeight + (SuppliedCargoType->Category != nullptr ? SuppliedCargoType->Category->SelectionWeight : 0.0f));
+				}
 			}
 		}
 	}
-
+	
 	const int32 CargoComplexity = RandomEntryWithWeight(InDayDefinition->CargoManifestComplexityWeights);
 	
 	float RemainingWeight = InRequest.Ship->MaximumWeight;
 	int32 UnitsLeft = InRequest.Ship->UnitCapacity;
 
 	TArray<UCargoTypeDefinition*> AlreadyUsedCargo;
+	TArray<const FGameplayTagContextData*> CargoContexts;
+	TArray<const FGameplayTagContextData*> UnfulfilledCargoContexts;
+
+	if(InGameplayTagContexts != nullptr)
+	{
+		for(const FGameplayTag& RequestTag : InRequest.Character.CurrentTags)
+		{
+			if(const FGameplayTagContextData* TagContext = InGameplayTagContexts->FindTagContextData(RequestTag))
+			{
+				if(TagContext->Context == EGameplayTagContext::ManifestCargo)
+				{
+					CargoContexts.Add(TagContext);
+				}
+			}
+		}
+	}
+	
 	for(int32 i = 0; i < CargoComplexity; i++)
 	{
+		const TMap<UCargoTypeDefinition*, float>* MutualCargoTypesToUse = &MutualCargoTypes;
+		const TMap<UCargoTypeDefinition*, float>* StandardCargoTypesToUse = &InDataMap->CargoWeights;
+		
+		FCargoManifestEntry NewEntry;
+		
+		if(CargoContexts.Num() > i)
+		{
+			if(const FGameplayTagContextData* TagContext = CargoContexts[i])
+			{
+				if(TagContext->Modifiers.Contains(EGameplayTagModifier::Illegal))
+				{
+					MutualCargoTypesToUse = &MutualContraband;
+					StandardCargoTypesToUse = &InDataMap->ContrabandWeights;
+				}
+				NewEntry.Modifiers = TagContext->Modifiers;
+			}
+		}
+
 		const int32 MinimumUnits = FMath::Min(FMath::FloorToInt32(static_cast<float>(InRequest.Ship->UnitCapacity) * (i / CargoComplexity)), UnitsLeft);
 		if(MutualCargoTypes.Num() > 0 ? FMath::RandBool() : false)
 		{
-			if(UCargoTypeDefinition* ChosenCargoType = RandomEntryWithWeight(MutualCargoTypes, AlreadyUsedCargo); ChosenCargoType != nullptr)
+			if(UCargoTypeDefinition* ChosenCargoType = RandomEntryWithWeight(*MutualCargoTypesToUse, AlreadyUsedCargo); ChosenCargoType != nullptr)
 			{
-				if(int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
+				if(const int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
 				{
-					InRequest.CargoManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
-					RemainingWeight -= UnitsChosen * ChosenCargoType->WeightMultiplierPerUnit;
-					UnitsLeft -= UnitsChosen;
-					AlreadyUsedCargo.Add(ChosenCargoType);
-					continue;
+					NewEntry.CargoType = ChosenCargoType;
+					NewEntry.TotalUnits = UnitsChosen;
 				}
 			}
 		}
 		
-		if(UCargoTypeDefinition* ChosenCargoType = RandomEntryWithWeight(InDataMap->CargoWeights, AlreadyUsedCargo))
+		if(UCargoTypeDefinition* ChosenCargoType = RandomEntryWithWeight(*StandardCargoTypesToUse, AlreadyUsedCargo))
 		{
-			if(int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
+			if(const int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
 			{
-				InRequest.CargoManifest.Cargo.Emplace(ChosenCargoType, UnitsChosen);
-				RemainingWeight -= UnitsChosen * ChosenCargoType->WeightMultiplierPerUnit;
-				UnitsLeft -= UnitsChosen;
-				AlreadyUsedCargo.Add(ChosenCargoType);
-				continue;
+				NewEntry.CargoType = ChosenCargoType;
+				NewEntry.TotalUnits = UnitsChosen;
 			}
+		}
+
+		if(NewEntry.CargoType != nullptr)
+		{
+			
+			RemainingWeight -= NewEntry.TotalUnits * NewEntry.CargoType->WeightMultiplierPerUnit;
+			UnitsLeft -= NewEntry.TotalUnits;
+			AlreadyUsedCargo.Add(NewEntry.CargoType);
+
+			if(const bool CompletelyFakeEntry =  NewEntry.Modifiers.Contains(EGameplayTagModifier::Fake); CompletelyFakeEntry || NewEntry.Modifiers.Contains(EGameplayTagModifier::NameSwapped))
+			{
+				UCargoTypeDefinition* ChosenCargoType = nullptr;
+				if(MutualCargoTypes.Num() > 0 ? FMath::RandBool() : false)
+				{
+					ChosenCargoType = RandomEntryWithWeight(MutualCargoTypes, AlreadyUsedCargo);
+				}
+				if(ChosenCargoType == nullptr)
+				{
+					ChosenCargoType = RandomEntryWithWeight(InDataMap->CargoWeights, AlreadyUsedCargo);
+				}
+				if(ChosenCargoType != nullptr)
+				{
+					if(NewEntry.Modifiers.Contains(EGameplayTagModifier::HasTypo))
+					{
+						if(ChosenCargoType->NameTypos.IsEmpty())
+						{
+							UE_LOG(CustomsRequestsHelperLog, Error, TEXT("CustomsRequestsHelper::GenerateCargoManifest - cargo definition %s missing typos"), *ChosenCargoType->Name);
+						}
+						else
+						{
+							NewEntry.DisplayName = ChosenCargoType->NameTypos[FMath::RandRange(0, NewEntry.CargoType->NameTypos.Num() - 1)];
+						}
+					}
+					else
+					{
+						NewEntry.DisplayName = ChosenCargoType->Name;
+					}
+					if(CompletelyFakeEntry)
+					{
+						NewEntry.DisplayWeight = ChosenCargoType->WeightMultiplierPerUnit;
+					}
+					AlreadyUsedCargo.Add(ChosenCargoType);
+				}
+			}
+			else if(NewEntry.Modifiers.Contains(EGameplayTagModifier::HasTypo))
+			{
+				if(NewEntry.CargoType->NameTypos.IsEmpty())
+				{
+					UE_LOG(CustomsRequestsHelperLog, Error, TEXT("CustomsRequestsHelper::GenerateCargoManifest - cargo definition %s missing typos"), *NewEntry.CargoType->Name);
+				}
+				else
+				{
+					NewEntry.DisplayName = NewEntry.CargoType->NameTypos[FMath::RandRange(0, NewEntry.CargoType->NameTypos.Num() - 1)];
+				}
+			}
+			if(NewEntry.DisplayName.IsEmpty())
+			{
+				NewEntry.DisplayName = NewEntry.CargoType->Name;
+			}
+			
+			InRequest.CargoManifest.Cargo.Add(NewEntry);
+			continue;
+		}
+		if(CargoContexts.Num() > i)
+		{
+			UnfulfilledCargoContexts.Add(CargoContexts[i]);
 		}
 		
 		break;
+	}
+	
+	for(const FGameplayTagContextData* UnfulfilledContext : UnfulfilledCargoContexts)
+	{
+		InRequest.Character.CurrentTags.Remove(UnfulfilledContext->Tag);
 	}
 }
 

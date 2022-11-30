@@ -46,9 +46,6 @@ public:
 	UCharacterAppearanceDataAsset* CharacterAppearance;
 
 	UPROPERTY(VisibleAnywhere)
-	TArray<ECustomsRequestModifier> RequestModifiers;
-	
-	UPROPERTY(VisibleAnywhere)
 	FCargoManifest CargoManifest;
 	
 	UPROPERTY(VisibleAnywhere)
