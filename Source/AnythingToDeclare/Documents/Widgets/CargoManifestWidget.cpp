@@ -2,6 +2,7 @@
 
 #include "CargoManifestEntryWidget.h"
 #include "../CargoManifest.h"
+#include "AnythingToDeclare/Settings/GameplayTagContextAsset.h"
 #include "UMG/Public/Components/TextBlock.h"
 
 void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
@@ -37,6 +38,10 @@ void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
 		CargoManifestEntries->ScrollToStart();
 		for(const FCargoManifestEntry& Entry : InManifest.Cargo)
 		{
+			if(Entry.Modifiers.Contains(EGameplayTagModifier::HiddenPartially) || Entry.Modifiers.Contains(EGameplayTagModifier::HiddenFully))
+			{
+				continue;
+			}
 			UCargoManifestEntryWidget* NewEntry = CreateWidget<UCargoManifestEntryWidget>(this, CargoManifestEntryWidgetClass);
 			NewEntry->SetCargoManifestEntry(Entry);
 			CargoManifestEntries->AddChild(NewEntry);
