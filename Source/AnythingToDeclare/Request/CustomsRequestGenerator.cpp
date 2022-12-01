@@ -43,26 +43,37 @@ void CustomsRequestsHelper::GenerateRequest(FCustomsRequest& InRequest, const UC
 void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap,
 	const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition)
 {
-	if(InRequest.CharacterAppearance == nullptr && InRequest.Character.CurrentTags.IsEmpty())
+	if(InRequest.CharacterAppearance == nullptr)
 	{
-		TArray<TPair<FGameplayTag, float>> ShuffledCharacterModifiers = InDayDefinition->CharacterModifiers.Array();
-		const int32 NumShuffles = ShuffledCharacterModifiers.Num() - 1;
-		for(int32 i = 0 ; i < NumShuffles ; ++i)
+		if(InRequest.Character.CurrentTags.IsEmpty())
 		{
-			const int32 SwapIdx = FMath::RandRange(i, NumShuffles);
-			ShuffledCharacterModifiers.Swap(i, SwapIdx);
+			const int32 CharacterModifiersComplexity = RandomEntryWithWeight(InDayDefinition->CharacterModifierComplexityWeights);
+			TArray<FGameplayTag> AlreadyAddedTags;
+			for(int32 i = 0 ; i < CharacterModifiersComplexity ; ++i)
+			{
+				if(FGameplayTag TagToAdd = RandomEntryWithWeight(InDayDefinition->CharacterModifierWeights, AlreadyAddedTags); TagToAdd.IsValid())
+				{
+					AlreadyAddedTags.Add(TagToAdd);
+					InRequest.Character.CurrentTags.Add(TagToAdd);
+				}
+			}
 		}
 		
-		for(const TPair<FGameplayTag, float>& TagChance : ShuffledCharacterModifiers)
+		if(InRequest.RequestModifiers.IsEmpty())
 		{
-			// TODO: Disallow if existing chosen tags prevent this one.
-			if(FMath::RandRange(0.0f, 1.0f) >= TagChance.Value)
+			const int32 RequestModifiersComplexity = RandomEntryWithWeight(InDayDefinition->RequestModifierComplexityWeights);
+			TArray<FGameplayTag> AlreadyAddedTags;
+			for(int32 i = 0 ; i < RequestModifiersComplexity ; ++i)
 			{
-				InRequest.Character.CurrentTags.Add(TagChance.Key);
+				if(FGameplayTag TagToAdd = RandomEntryWithWeight(InDayDefinition->RequestModifierWeights, AlreadyAddedTags); TagToAdd.IsValid())
+				{
+					AlreadyAddedTags.Add(TagToAdd);
+					InRequest.RequestModifiers.Add(TagToAdd);
+				}
 			}
 		}
 	}
-		
+
 	if(InRequest.Character.Age == 0)
 	{
 		InRequest.Character.Age = FMath::RandRange(20, 70);
@@ -388,7 +399,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 
 	if(InGameplayTagContexts != nullptr)
 	{
-		for(const FGameplayTag& RequestTag : InRequest.Character.CurrentTags)
+		for(const FGameplayTag& RequestTag : InRequest.RequestModifiers)
 		{
 			if(const FGameplayTagContextData* TagContext = InGameplayTagContexts->FindTagContextData(RequestTag))
 			{
@@ -513,7 +524,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 	
 	for(const FGameplayTagContextData* UnfulfilledContext : UnfulfilledCargoContexts)
 	{
-		InRequest.Character.CurrentTags.Remove(UnfulfilledContext->Tag);
+		InRequest.RequestModifiers.Remove(UnfulfilledContext->Tag);
 	}
 }
 
@@ -536,19 +547,34 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 		InRequest.Character.ShipName = InRequest.CharacterAppearance->Character->ShipName;
 
 		TArray<TPair<FGameplayTag, float>> ShuffledCharacterModifiers = InRequest.CharacterAppearance->CharacterModifiers.Array();
-		const int32 NumShuffles = ShuffledCharacterModifiers.Num() - 1;
-		for(int32 i = 0 ; i < NumShuffles ; ++i)
+		const int32 NumCharShuffles = ShuffledCharacterModifiers.Num() - 1;
+		for(int32 i = 0 ; i < NumCharShuffles ; ++i)
 		{
-			const int32 SwapIdx = FMath::RandRange(i, NumShuffles);
+			const int32 SwapIdx = FMath::RandRange(i, NumCharShuffles);
 			ShuffledCharacterModifiers.Swap(i, SwapIdx);
 		}
 		
 		for(const TPair<FGameplayTag, float>& TagChance : ShuffledCharacterModifiers)
 		{
-			// TODO: Disallow if existing chosen tags prevent this one.
 			if(FMath::RandRange(0.0f, 1.0f) >= TagChance.Value)
 			{
 				InRequest.Character.CurrentTags.Add(TagChance.Key);
+			}
+		}
+		
+		TArray<TPair<FGameplayTag, float>> ShuffledRequestModifiers = InRequest.CharacterAppearance->RequestModifiers.Array();
+		const int32 NumReqShuffles = ShuffledRequestModifiers.Num() - 1;
+		for(int32 i = 0 ; i < NumReqShuffles ; ++i)
+		{
+			const int32 SwapIdx = FMath::RandRange(i, NumReqShuffles);
+			ShuffledRequestModifiers.Swap(i, SwapIdx);
+		}
+		
+		for(const TPair<FGameplayTag, float>& TagChance : ShuffledRequestModifiers)
+		{
+			if(FMath::RandRange(0.0f, 1.0f) >= TagChance.Value)
+			{
+				InRequest.RequestModifiers.Add(TagChance.Key);
 			}
 		}
 		

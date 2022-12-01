@@ -22,9 +22,20 @@ class ANYTHINGTODECLARE_API UDayDefinitionMap : public UDataAsset
 public:
 	UDayDefinitionMap();
 
+	virtual void PostLoad() override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	void RegenerateDataLists();
+
+	void OnDayAssetLoaded(const UDayDefinitionAsset* LoadedAsset);
+	
 	UFUNCTION()
 	const UDayDefinitionAsset* FindDayNumber(const int32 InDayNumber) const;
-	
+
+private:
 	UPROPERTY(EditDefaultsOnly)
+	FDirectoryPath DaysFolder;
+
+	UPROPERTY()
 	TArray<const UDayDefinitionAsset*> Days;
 };

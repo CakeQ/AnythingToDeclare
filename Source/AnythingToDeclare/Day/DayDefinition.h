@@ -30,7 +30,16 @@ public:
 	TMap<ECustomsRequestType, float> CustomsRequestTypeWeight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FGameplayTag, float> CharacterModifiers;
+	TMap<int32, float> CharacterModifierComplexityWeights;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<int32, float> RequestModifierComplexityWeights;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FGameplayTag, float> CharacterModifierWeights;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FGameplayTag, float> RequestModifierWeights;
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<int32, float> CargoManifestComplexityWeights;

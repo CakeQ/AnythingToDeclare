@@ -55,6 +55,9 @@ public:
 	ECustomsRequestType RequestType;
 
 	UPROPERTY(VisibleAnywhere)
+	TArray<FGameplayTag> RequestModifiers;
+	
+	UPROPERTY(VisibleAnywhere)
 	ECustomsRequestOutcome Outcome;
 
 	UPROPERTY(VisibleAnywhere)

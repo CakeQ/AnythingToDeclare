@@ -29,6 +29,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Percentage based modifier chances. 1.0 for 100%"))
 	TMap<FGameplayTag, float> CharacterModifiers;
 
+	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Percentage based modifier chances. 1.0 for 100%"))
+	TMap<FGameplayTag, float> RequestModifiers;
+
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag TagOnApprove;
 
