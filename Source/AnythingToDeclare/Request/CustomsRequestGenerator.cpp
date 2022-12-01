@@ -345,6 +345,26 @@ void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const
 
 void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition)
 {
+	TArray<const FGameplayTagContextData*> CargoContexts;
+	TArray<EGameplayTagContext> TypoFields;
+	if(InGameplayTagContexts != nullptr)
+	{
+		for(const FGameplayTag& RequestTag : InRequest.RequestModifiers)
+		{
+			if(const FGameplayTagContextData* TagContext = InGameplayTagContexts->FindTagContextData(RequestTag))
+			{
+				if(TagContext->Context == EGameplayTagContext::ManifestCargo)
+				{
+					CargoContexts.Add(TagContext);
+				}
+			}
+			else if(TagContext->Modifiers.Contains(EGameplayTagModifier::HasTypo))
+			{
+				TypoFields.Add(TagContext->Context);
+			}
+		}
+	}
+	
 	if(InRequest.CargoManifest.ShipName.IsEmpty())
 	{
 		InRequest.CargoManifest.ShipName = InRequest.Character.ShipName;
@@ -357,6 +377,31 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 		{
 			InRequest.CargoManifest.OriginLocation = LocationDefinition->Name;
 		}
+		if(TypoFields.Contains(EGameplayTagContext::ManifestOrigin))
+		{
+			if(FMath::RandBool())
+			{
+				if(InRequest.OriginLocation->NameTypos.IsEmpty())
+				{
+					UE_LOG(CustomsRequestsHelperLog, Error, TEXT("CustomsRequestsHelper::GenerateCargoManifest - sublocation definition %s missing typos"), *InRequest.OriginLocation->Name);
+				}
+				else
+				{
+					InRequest.CargoManifest.OriginSubLocation = InRequest.OriginLocation->NameTypos[FMath::RandRange(0, InRequest.OriginLocation->NameTypos.Num() - 1)];
+				}
+			}
+			else if(ULocationDefinition* LocationDefinition = InRequest.OriginLocation->Location)
+			{
+				if(LocationDefinition->NameTypos.IsEmpty())
+				{
+					UE_LOG(CustomsRequestsHelperLog, Error, TEXT("CustomsRequestsHelper::GenerateCargoManifest - location definition %s missing typos"), *LocationDefinition->Name);
+				}
+				else
+				{
+					InRequest.CargoManifest.OriginLocation = LocationDefinition->NameTypos[FMath::RandRange(0, LocationDefinition->NameTypos.Num() - 1)];
+				}
+			}
+		}
 	}
 
 	if(InRequest.DestinationLocation != nullptr)
@@ -365,6 +410,31 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 		if(ULocationDefinition* LocationDefinition = InRequest.DestinationLocation->Location)
 		{
 			InRequest.CargoManifest.DestinationLocation = LocationDefinition->Name;
+		}
+		if(TypoFields.Contains(EGameplayTagContext::ManifestDestination))
+		{
+			if(FMath::RandBool())
+			{
+				if(InRequest.DestinationLocation->NameTypos.IsEmpty())
+				{
+					UE_LOG(CustomsRequestsHelperLog, Error, TEXT("CustomsRequestsHelper::GenerateCargoManifest - sublocation definition %s missing typos"), *InRequest.DestinationLocation->Name);
+				}
+				else
+				{
+					InRequest.CargoManifest.DestinationSubLocation = InRequest.DestinationLocation->NameTypos[FMath::RandRange(0, InRequest.DestinationLocation->NameTypos.Num() - 1)];
+				}
+			}
+			else if(ULocationDefinition* LocationDefinition = InRequest.DestinationLocation->Location)
+			{
+				if(LocationDefinition->NameTypos.IsEmpty())
+				{
+					UE_LOG(CustomsRequestsHelperLog, Error, TEXT("CustomsRequestsHelper::GenerateCargoManifest - location definition %s missing typos"), *LocationDefinition->Name);
+				}
+				else
+				{
+					InRequest.CargoManifest.DestinationLocation = LocationDefinition->NameTypos[FMath::RandRange(0, LocationDefinition->NameTypos.Num() - 1)];
+				}
+			}
 		}
 	}
 
@@ -394,23 +464,8 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 	int32 UnitsLeft = InRequest.Ship->UnitCapacity;
 
 	TArray<UCargoTypeDefinition*> AlreadyUsedCargo;
-	TArray<const FGameplayTagContextData*> CargoContexts;
 	TArray<const FGameplayTagContextData*> UnfulfilledCargoContexts;
 
-	if(InGameplayTagContexts != nullptr)
-	{
-		for(const FGameplayTag& RequestTag : InRequest.RequestModifiers)
-		{
-			if(const FGameplayTagContextData* TagContext = InGameplayTagContexts->FindTagContextData(RequestTag))
-			{
-				if(TagContext->Context == EGameplayTagContext::ManifestCargo)
-				{
-					CargoContexts.Add(TagContext);
-				}
-			}
-		}
-	}
-	
 	for(int32 i = 0; i < CargoComplexity; i++)
 	{
 		const TMap<UCargoTypeDefinition*, float>* MutualCargoTypesToUse = &MutualCargoTypes;
