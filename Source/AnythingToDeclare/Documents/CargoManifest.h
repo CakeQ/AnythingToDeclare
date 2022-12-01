@@ -17,7 +17,7 @@ public:
 
 	FCargoManifestEntry()
 		: CargoType(nullptr)
-		, DisplayWeight(0.0f)
+		, DisplayWeightMultiplierPerUnit(0.0f)
 		, TotalUnits(0)
 	{
 	}
@@ -29,7 +29,7 @@ public:
 	FString DisplayName;
 
 	UPROPERTY(EditAnywhere)
-	float DisplayWeight;
+	float DisplayWeightMultiplierPerUnit;
 	
 	UPROPERTY(EditAnywhere)
 	TArray<EGameplayTagModifier> Modifiers;

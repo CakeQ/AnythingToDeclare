@@ -38,6 +38,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UScrollBox* CargoManifestEntries;
 
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* CargoWeightTotal;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCargoManifestEntryWidget> CargoManifestEntryWidgetClass;
 };

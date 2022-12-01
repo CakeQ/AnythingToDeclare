@@ -455,7 +455,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 
 		if(NewEntry.CargoType != nullptr)
 		{
-			
+			NewEntry.DisplayWeightMultiplierPerUnit = NewEntry.CargoType->WeightMultiplierPerUnit;
 			RemainingWeight -= NewEntry.TotalUnits * NewEntry.CargoType->WeightMultiplierPerUnit;
 			UnitsLeft -= NewEntry.TotalUnits;
 			AlreadyUsedCargo.Add(NewEntry.CargoType);
@@ -490,7 +490,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 					}
 					if(CompletelyFakeEntry)
 					{
-						NewEntry.DisplayWeight = ChosenCargoType->WeightMultiplierPerUnit;
+						NewEntry.DisplayWeightMultiplierPerUnit = ChosenCargoType->WeightMultiplierPerUnit;
 					}
 					AlreadyUsedCargo.Add(ChosenCargoType);
 				}

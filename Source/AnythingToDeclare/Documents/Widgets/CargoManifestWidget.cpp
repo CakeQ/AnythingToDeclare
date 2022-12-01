@@ -47,4 +47,20 @@ void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
 			CargoManifestEntries->AddChild(NewEntry);
 		}
 	}
+
+	if(CargoWeightTotal != nullptr)
+	{
+		float WeightTotal = 0.0f;
+		for(const FCargoManifestEntry& Entry : InManifest.Cargo)
+		{
+			if(Entry.Modifiers.Contains(EGameplayTagModifier::HiddenFully))
+			{
+				continue;
+			}
+			WeightTotal += Entry.TotalUnits * Entry.DisplayWeightMultiplierPerUnit;
+		}
+		FNumberFormattingOptions FormattingOptions;
+		FormattingOptions.SetMaximumFractionalDigits(1);
+		CargoWeightTotal->SetText(FText::AsNumber(WeightTotal, &FormattingOptions));
+	}
 }

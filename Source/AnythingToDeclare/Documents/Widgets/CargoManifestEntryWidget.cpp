@@ -21,7 +21,7 @@ void UCargoManifestEntryWidget::SetCargoManifestEntry(const FCargoManifestEntry&
 		{
 			FNumberFormattingOptions FormattingOptions;
 			FormattingOptions.SetMaximumFractionalDigits(1);
-			CargoWeight->SetText(FText::AsNumber(InManifestEntry.TotalUnits * InManifestEntry.CargoType->WeightMultiplierPerUnit, &FormattingOptions));
+			CargoWeight->SetText(FText::AsNumber(InManifestEntry.TotalUnits * InManifestEntry.DisplayWeightMultiplierPerUnit, &FormattingOptions));
 		}
 		
 		if(CargoValue != nullptr)
