@@ -31,8 +31,9 @@ public:
 
 	UFUNCTION()
 	void OnCheckBoxStateChanged(bool bBIsChecked);
-	
-	void SetLinkedData(const UObject* InDataAsset);
+
+	const UObject* GetLinkedData();
+	void SetLinkedData(const UObject* InData);
 	void SetHighlightableState(const TArray<FGameplayTag>& InRequestTags);
 public:
 	FOnHighlightChangedDelegate OnHighlightChanged;
@@ -45,7 +46,7 @@ private:
 	TArray<FGameplayTag> RequestTagsThatAllowHighlighting;
 	
 	UPROPERTY()
-	const UObject* LinkedDataAsset;
+	const UObject* LinkedData;
 	
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;

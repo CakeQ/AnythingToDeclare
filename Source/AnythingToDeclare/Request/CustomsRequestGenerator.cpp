@@ -46,21 +46,7 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 {
 	if(InRequest.CharacterAppearance == nullptr)
 	{
-		if(InRequest.Character.CurrentTags.IsEmpty())
-		{
-			const int32 CharacterModifiersComplexity = RandomEntryWithWeight(InDayDefinition->CharacterModifierComplexityWeights);
-			TArray<FGameplayTag> AlreadyAddedTags;
-			for(int32 i = 0 ; i < CharacterModifiersComplexity ; ++i)
-			{
-				if(FGameplayTag TagToAdd = RandomEntryWithWeight(InDayDefinition->CharacterModifierWeights, AlreadyAddedTags); TagToAdd.IsValid())
-				{
-					AlreadyAddedTags.Add(TagToAdd);
-					InRequest.Character.CurrentTags.Add(TagToAdd);
-				}
-			}
-		}
-		
-		if(InRequest.RequestModifiers.IsEmpty())
+		if(InRequest.RequestTags.IsEmpty())
 		{
 			const int32 RequestModifiersComplexity = RandomEntryWithWeight(InDayDefinition->RequestModifierComplexityWeights);
 			TArray<FGameplayTag> AlreadyAddedTags;
@@ -69,7 +55,7 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 				if(FGameplayTag TagToAdd = RandomEntryWithWeight(InDayDefinition->RequestModifierWeights, AlreadyAddedTags); TagToAdd.IsValid())
 				{
 					AlreadyAddedTags.Add(TagToAdd);
-					InRequest.RequestModifiers.Add(TagToAdd);
+					InRequest.RequestTags.Add(TagToAdd);
 				}
 			}
 		}
@@ -82,7 +68,7 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 	if(InRequest.Character.CryogenicAge == 0)
 	{
 		InRequest.Character.CryogenicAge = InRequest.Character.Age;
-		for(const FGameplayTag& Tag : InRequest.Character.CurrentTags)
+		for(const FGameplayTag& Tag : InRequest.RequestTags)
 		{
 			if(InGameplayTagContexts->RequestModifiers.FindByPredicate([Tag](const FGameplayTagContextData& Iterator){ return Iterator.Tag.MatchesTag(Tag) && Iterator.Context == EGameplayTagContext::IDAgeCryo;}))
 			{
@@ -350,7 +336,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 	TArray<EGameplayTagContext> TypoFields;
 	if(InGameplayTagContexts != nullptr)
 	{
-		for(const FGameplayTag& RequestTag : InRequest.RequestModifiers)
+		for(const FGameplayTag& RequestTag : InRequest.RequestTags)
 		{
 			if(const FGameplayTagContextData* TagContext = InGameplayTagContexts->FindRequestTagContextData(RequestTag))
 			{
@@ -583,7 +569,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 	
 	for(const FGameplayTagContextData* UnfulfilledContext : UnfulfilledCargoContexts)
 	{
-		InRequest.RequestModifiers.Remove(UnfulfilledContext->Tag);
+		InRequest.RequestTags.Remove(UnfulfilledContext->Tag);
 	}
 }
 
@@ -605,22 +591,6 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 		InRequest.Character.FacePortrait = InRequest.CharacterAppearance->Character->FacePortrait;
 		InRequest.Character.ShipName = InRequest.CharacterAppearance->Character->ShipName;
 
-		TArray<TPair<FGameplayTag, float>> ShuffledCharacterModifiers = InRequest.CharacterAppearance->CharacterModifiers.Array();
-		const int32 NumCharShuffles = ShuffledCharacterModifiers.Num() - 1;
-		for(int32 i = 0 ; i < NumCharShuffles ; ++i)
-		{
-			const int32 SwapIdx = FMath::RandRange(i, NumCharShuffles);
-			ShuffledCharacterModifiers.Swap(i, SwapIdx);
-		}
-		
-		for(const TPair<FGameplayTag, float>& TagChance : ShuffledCharacterModifiers)
-		{
-			if(FMath::RandRange(0.0f, 1.0f) >= TagChance.Value)
-			{
-				InRequest.Character.CurrentTags.Add(TagChance.Key);
-			}
-		}
-		
 		TArray<TPair<FGameplayTag, float>> ShuffledRequestModifiers = InRequest.CharacterAppearance->RequestModifiers.Array();
 		const int32 NumReqShuffles = ShuffledRequestModifiers.Num() - 1;
 		for(int32 i = 0 ; i < NumReqShuffles ; ++i)
@@ -631,9 +601,9 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 		
 		for(const TPair<FGameplayTag, float>& TagChance : ShuffledRequestModifiers)
 		{
-			if(FMath::RandRange(0.0f, 1.0f) >= TagChance.Value)
+			if(FMath::RandRange(0.0f, 1.0f) < TagChance.Value)
 			{
-				InRequest.RequestModifiers.Add(TagChance.Key);
+				InRequest.RequestTags.Add(TagChance.Key);
 			}
 		}
 		

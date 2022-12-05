@@ -10,7 +10,7 @@ void UQuestionHighlightBox::GetQuestionContextData(FDialogueQuestion& InQuestion
 {
 	if(GetCheckedState() == ECheckBoxState::Checked)
 	{
-		InQuestion.HighlightedSources.Emplace(ContextTag, LinkedDataAsset);
+		InQuestion.HighlightedSources.Emplace(ContextTag, LinkedData);
 	}
 }
 
@@ -32,9 +32,14 @@ void UQuestionHighlightBox::OnCheckBoxStateChanged(bool bBIsChecked)
 	OnHighlightChanged.ExecuteIfBound(GetCheckedState() == ECheckBoxState::Checked, this);
 }
 
-void UQuestionHighlightBox::SetLinkedData(const UObject* InDataAsset)
+const UObject* UQuestionHighlightBox::GetLinkedData()
 {
-	LinkedDataAsset = InDataAsset;
+	return LinkedData;
+}
+
+void UQuestionHighlightBox::SetLinkedData(const UObject* InData)
+{
+	LinkedData = InData;
 }
 
 void UQuestionHighlightBox::SetHighlightableState(const TArray<FGameplayTag>& InRequestTags)

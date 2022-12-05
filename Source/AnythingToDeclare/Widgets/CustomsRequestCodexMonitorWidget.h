@@ -9,6 +9,7 @@
 
 #include "CustomsRequestCodexMonitorWidget.generated.h"
 
+class UWidgetSwitcher;
 class UCodexWidget;
 
 /**
@@ -21,6 +22,11 @@ class ANYTHINGTODECLARE_API UCustomsRequestCodexMonitorWidget : public UUserWidg
 
 public:
 	UCustomsRequestCodexMonitorWidget(const FObjectInitializer& ObjectInitializer);
+	
+	void TryToFindAndShowData(const UObject* InData) const;
+	
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UWidgetSwitcher* CodexSwitcher;
 	
 	UPROPERTY(meta = (BindWidget))
 	UCodexWidget* CargoCodex;

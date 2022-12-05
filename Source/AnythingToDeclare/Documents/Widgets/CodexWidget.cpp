@@ -112,4 +112,45 @@ bool UCodexWidget::GetEntryLayer(UObject* Entry, int32& LayerCount, const TArray
 	return false;
 }
 
+bool UCodexWidget::TryToFindAndShowData(const UObject* InData)
+{
+	if(CodexList != nullptr)
+	{
+		for(UObject* Entry : CodexList->GetListItems())
+		{
+			if(UObject* FoundLinkedObject = FindLinkedDataIterative(Entry, InData))
+			{
+				SetActiveEntry(FoundLinkedObject);
+				CodexList->SetItemExpansion(FoundLinkedObject, true);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+UObject* UCodexWidget::FindLinkedDataIterative(UObject* Parent, const UObject* LinkedData)
+{
+	if(Parent != nullptr && LinkedData != nullptr)
+	{
+		if(const UCodexListEntry* CodexParent = Cast<UCodexListEntry>(Parent))
+		{
+			if(CodexParent->GetLinkedData() == LinkedData)
+			{
+				return Parent;
+			}
+			TArray<UObject*> Children;
+			OnGetChildren(Parent, Children);
+			for(UObject* EntryIter : Children)
+			{
+				if(UObject* FoundObject = FindLinkedDataIterative(EntryIter, LinkedData))
+				{
+					return FoundObject;
+				}
+			}
+		}
+	}
+	return nullptr;
+}
+
 

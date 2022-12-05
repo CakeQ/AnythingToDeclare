@@ -20,7 +20,6 @@ public:
 		, Surname()
 		, Portrait(nullptr)
 		, FacePortrait(nullptr)
-		, CurrentTags()
 	{
 	}
 	
@@ -47,6 +46,4 @@ public:
 	
 	UPROPERTY()
 	UMaterialInstance* FacePortrait;
-
-	TArray<FGameplayTag> CurrentTags;
 };

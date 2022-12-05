@@ -134,7 +134,7 @@ void AAnythingToDeclareGameState::BeginPlay()
 void AAnythingToDeclareGameState::StartDay(const int32 InDayNumber)
 {
 	DayNumber = InDayNumber;
-	CurrentRequestCount = 1;
+	CurrentRequestCount = 0;
 	if(DayDataMap != nullptr)
 	{
 		if(const UDayDefinitionAsset* DayDefinitionAsset = DayDataMap->FindDayNumber(InDayNumber))
@@ -210,7 +210,7 @@ void AAnythingToDeclareGameState::NextRequest()
 	}
 	HighlightedTextBlocks.Empty(MaxHighlights);
 	
-	GenerateMessageToSend(GameplayTagContexts->GreetingTag, CurrentRequest.Character.CurrentTags, 1.0f, false);
+	GenerateMessageToSend(GameplayTagContexts->GreetingTag, CurrentRequest.RequestTags, 1.0f, false);
 }
 
 void AAnythingToDeclareGameState::OnRequestApproved()
@@ -234,7 +234,7 @@ void AAnythingToDeclareGameState::OnQuestioned()
 	if(const FQuestionTagContextData* FoundContextData = GameplayTagContexts->FindQuestionTagContextData(QuestionData))
 	{
 		GenerateMessageToSend(FoundContextData->DialogueTag, PlayerTags, 0.5f, true);
-		GenerateMessageToSend(FoundContextData->ResponseTag, CurrentRequest.Character.CurrentTags, 2.0f, false);
+		GenerateMessageToSend(FoundContextData->ResponseTag, CurrentRequest.RequestTags, 2.0f, false);
 	}
 	HighlightedTextBlocks.Empty(MaxHighlights);
 }
@@ -249,6 +249,15 @@ void AAnythingToDeclareGameState::OnQuestionContextHighlighted(const bool IsHigh
 	else if(IsHighlighted)
 	{
 		HighlightedTextBlocks.AddUnique(InWidget);
+
+		if(const UObject* LinkedData = InWidget->GetLinkedData())
+		{
+			if(const UCustomsRequestCodexMonitorWidget* CodexMonitorWidget = CachedCodexMonitorWidget.Get())
+			{
+				CodexMonitorWidget->TryToFindAndShowData(LinkedData);
+			}
+		}
+			
 		if(HighlightedTextBlocks.Num() > MaxHighlights)
 		{
 			if(UQuestionHighlightBox* HighlightToRemove = HighlightedTextBlocks[0])
@@ -358,7 +367,7 @@ void AAnythingToDeclareGameState::GenerateMessageToSend(const FGameplayTag& Mess
 					Message.DialogueText = FText::FromString(ChosenDialogue->Dialogue);
 					if(!IsPlayer)
 					{
-						CurrentRequest.Character.CurrentTags.AddUnique(ChosenDialogue->DialogueTag);
+						CurrentRequest.RequestTags.AddUnique(ChosenDialogue->DialogueTag);
 					}
 				}
 			}
