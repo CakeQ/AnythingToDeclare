@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ScrollBox.h"
+#include "Interfaces/QuestionContextInterface.h"
 
 #include "UMG/Public/Blueprint/UserWidget.h"
 
@@ -35,7 +36,7 @@ public:
 	void UnselectEntryAndChildren(UObject* Entry, const UObject* IgnoreObject);
 
 	bool GetEntryLayer(UObject* Entry, int32& LayerCount, const TArray<UObject*>& Entries);
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTreeView* CodexList;
 

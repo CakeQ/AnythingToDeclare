@@ -9,7 +9,7 @@
 
 enum class EGameplayTagModifier : uint8;
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FCargoManifestEntry
 {
 	GENERATED_BODY()
@@ -17,47 +17,51 @@ public:
 
 	FCargoManifestEntry()
 		: CargoType(nullptr)
+		, DisplayedCargoType(nullptr)
 		, DisplayWeightMultiplierPerUnit(0.0f)
 		, TotalUnits(0)
 	{
 	}
-	
-	UPROPERTY(EditAnywhere)
+
+	UPROPERTY()
 	UCargoTypeDefinition* CargoType;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
+	UCargoTypeDefinition* DisplayedCargoType;
+
+	UPROPERTY()
 	FString DisplayName;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	float DisplayWeightMultiplierPerUnit;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	TArray<EGameplayTagModifier> Modifiers;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	int32 TotalUnits;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FCargoManifest
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	FString ShipName;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	FString OriginLocation;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	FString OriginSubLocation;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	FString DestinationLocation;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	FString DestinationSubLocation;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	TArray<FCargoManifestEntry> Cargo;
 };

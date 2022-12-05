@@ -3,11 +3,14 @@
 #include "CoreMinimal.h"
 #include "AnythingToDeclare/Documents/CargoManifest.h"
 #include "Components/ScrollBox.h"
+#include "Interfaces/QuestionContextInterface.h"
 
 #include "UMG/Public/Blueprint/UserWidget.h"
 
 #include "CargoManifestWidget.generated.h"
 
+class UQuestionHighlightBox;
+class UQuestionHighlightWidget;
 class UCargoManifestEntryWidget;
 class UTextBlock;
 
@@ -16,13 +19,12 @@ class UCargoManifestWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintCallable)
 	virtual void SetCargoManifest(const FCargoManifest& InManifest);
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ShipName;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* OriginPlanet;
 	

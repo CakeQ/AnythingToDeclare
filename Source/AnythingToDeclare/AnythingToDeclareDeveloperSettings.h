@@ -24,5 +24,8 @@ public:
 	UPROPERTY(EditAnywhere, config)
 	FSoftObjectPath GameplayTagContexts;
 
+	UPROPERTY(EditAnywhere, config)
+	FSoftObjectPath QuestionTagContexts;
+
 	static UAnythingToDeclareDeveloperSettings* Get() { return GetMutableDefault<UAnythingToDeclareDeveloperSettings>(); }
 };

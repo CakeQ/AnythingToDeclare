@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AnythingToDeclare/Documents/Widgets/Interfaces/QuestionContextInterface.h"
 
 #include "Blueprint/UserWidget.h"
 
@@ -20,7 +21,7 @@ class ANYTHINGTODECLARE_API UCustomsRequestCodexMonitorWidget : public UUserWidg
 
 public:
 	UCustomsRequestCodexMonitorWidget(const FObjectInitializer& ObjectInitializer);
-
+	
 	UPROPERTY(meta = (BindWidget))
 	UCodexWidget* CargoCodex;
 	

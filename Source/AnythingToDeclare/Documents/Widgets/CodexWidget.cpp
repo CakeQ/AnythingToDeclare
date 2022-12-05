@@ -111,3 +111,5 @@ bool UCodexWidget::GetEntryLayer(UObject* Entry, int32& LayerCount, const TArray
 	}
 	return false;
 }
+
+

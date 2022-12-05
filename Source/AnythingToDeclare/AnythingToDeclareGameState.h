@@ -12,6 +12,8 @@
 
 #include "AnythingToDeclareGameState.generated.h"
 
+class UQuestionHighlightBox;
+class UButton;
 struct FDialogueDataTableRow;
 class UGameplayTagContextAsset;
 class UCustomsRequestConversationMonitorWidget;
@@ -52,6 +54,9 @@ public:
 	UFUNCTION()
 	void OnQuestioned();
 
+	UFUNCTION()
+	void OnQuestionContextHighlighted(const bool IsHighlighted, UQuestionHighlightBox* InWidget);
+	
 	static void GetMessageDataFromTable(const FGameplayTag& MessageType, const TArray<FGameplayTag>& InTags, const UDataTable* InTable, TArray<const
 		                                    FDialogueDataTableRow*>& OutData);
 	void GenerateMessageToSend(const FGameplayTag& MessageType, const TArray<FGameplayTag>& InTags, const float TimeToSend, const bool IsPlayer);
@@ -74,6 +79,8 @@ private:
 	int32 CurrentRequestCount;
 
 	int32 MaxCameraOrder;
+
+	int32 MaxHighlights;
 	
 	UPROPERTY(VisibleAnywhere)
 	const UDayDefinitionAsset* CurrentDayDefinition;
@@ -97,6 +104,9 @@ private:
 	TWeakObjectPtr<UCustomsRequestConversationMonitorWidget> CachedConversationMonitorWidget;
 
 	UPROPERTY()
+	TWeakObjectPtr<UButton> CachedQuestionButton;
+
+	UPROPERTY()
 	TWeakObjectPtr<AGenericConsole> FocusedConsole;
 	
 	UPROPERTY()
@@ -110,4 +120,9 @@ private:
 
 	UPROPERTY()
 	TArray<FTimerHandle> ConversationTimerHandles;
+
+	UPROPERTY()
+	TArray<UQuestionHighlightBox*> HighlightedTextBlocks;
+	
+	TArray<FGameplayTag> PlayerTags;
 };

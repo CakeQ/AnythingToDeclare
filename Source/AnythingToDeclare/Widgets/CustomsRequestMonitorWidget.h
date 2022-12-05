@@ -6,6 +6,7 @@
 
 #include "CustomsActionsBar.h"
 #include "AnythingToDeclare/Documents/Widgets/CargoManifestWidget.h"
+#include "AnythingToDeclare/Documents/Widgets/Interfaces/QuestionContextInterface.h"
 
 #include "CustomsRequestMonitorWidget.generated.h"
 
@@ -19,7 +20,7 @@ class ANYTHINGTODECLARE_API UCustomsRequestMonitorWidget : public UUserWidget
 
 public:
 	UCustomsRequestMonitorWidget(const FObjectInitializer& ObjectInitializer);
-
+	
 	UPROPERTY(meta = (BindWidget))
 	UCustomsActionsBar* ActionBar;
 	

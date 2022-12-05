@@ -6,12 +6,16 @@
 #include "Day/DayDefinitionMap.h"
 #include "Request/CustomsRequestDataMap.h"
 #include "Loader.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Camera/CameraActor.h"
 #include "Dialogue/DialogueDataTableRow.h"
 #include "Dialogue/DialogueMessage.h"
-#include "Documents/Widgets/CodexWidget.h"
+#include "Dialogue/DialogueQuestion.h"
 #include "Documents/Widgets/CodexWidgetHelpers.h"
 #include "Documents/Widgets/ConversationWidget.h"
+#include "Documents/Widgets/QuestionHighlightBox.h"
+#include "Documents/Widgets/Interfaces/QuestionContextGetterInterface.h"
+#include "Documents/Widgets/Interfaces/QuestionContextInterface.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Request/CustomsRequestGenerator.h"
@@ -67,6 +71,13 @@ void AAnythingToDeclareGameState::BeginPlay()
 		FLoader::Load<UGameplayTagContextAsset>(DeveloperSettings->GameplayTagContexts, [this](UGameplayTagContextAsset& InLoadedContexts)
 		{
 			GameplayTagContexts = &InLoadedContexts;
+			for(const FQuestionTagContextData& QuestionTagContextData : GameplayTagContexts->QuestionContexts)
+			{
+				if(QuestionTagContextData.TagRequirements.Num() > MaxHighlights)
+				{
+					MaxHighlights = QuestionTagContextData.TagRequirements.Num();
+				}
+			}
 			if(DayDataMap != nullptr && CustomsDataMap != nullptr)
 			{
 				StartDay(1);
@@ -101,6 +112,7 @@ void AAnythingToDeclareGameState::BeginPlay()
 						if(ActionBar->QuestionButton != nullptr)
 						{
 							ActionBar->QuestionButton->OnReleased.AddDynamic(this, &AAnythingToDeclareGameState::OnQuestioned);
+							CachedQuestionButton = ActionBar->QuestionButton;
 						}
 					}
 				}
@@ -148,6 +160,7 @@ void AAnythingToDeclareGameState::OnDayLoaded(const UDayDefinitionAsset* InDayAs
 
 void AAnythingToDeclareGameState::OnDayNotFound()
 {
+	// Use default day
 }
 
 void AAnythingToDeclareGameState::NextRequest()
@@ -171,6 +184,32 @@ void AAnythingToDeclareGameState::NextRequest()
 		}
 	}
 
+	TArray<UUserWidget*> QuestionContextWidgets;
+	UWidgetBlueprintLibrary::GetAllWidgetsWithInterface(this, QuestionContextWidgets, UQuestionContextGetterInterface::StaticClass(), false);
+	for(UUserWidget* Widget : QuestionContextWidgets)
+	{
+		if(const IQuestionContextGetterInterface* QuestionContextGetterInterface = Cast<IQuestionContextGetterInterface>(Widget))
+		{
+			TArray<UObject*> OutContexts;
+			QuestionContextGetterInterface->GetQuestionContextData(OutContexts);
+
+			for(UObject* ContextObject : OutContexts)
+			{
+				if(IQuestionContextInterface* QuestionContextInterface = Cast<IQuestionContextInterface>(ContextObject))
+				{
+					static const FName BinderFunction(TEXT("OnQuestionContextHighlighted"));
+					QuestionContextInterface->BindQuestionHighlighting(this, BinderFunction);
+				}
+			}
+		}
+	}
+	
+	for(UQuestionHighlightBox* HighlightedText : HighlightedTextBlocks)
+	{
+		HighlightedText->SetCheckedState(ECheckBoxState::Unchecked);
+	}
+	HighlightedTextBlocks.Empty(MaxHighlights);
+	
 	GenerateMessageToSend(GameplayTagContexts->GreetingTag, CurrentRequest.Character.CurrentTags, 1.0f, false);
 }
 
@@ -186,10 +225,43 @@ void AAnythingToDeclareGameState::OnRequestDenied()
 
 void AAnythingToDeclareGameState::OnQuestioned()
 {
+	FDialogueQuestion QuestionData;
+	for(UQuestionHighlightBox* HighlightedText : HighlightedTextBlocks)
+	{
+		HighlightedText->GetQuestionContextData(QuestionData);
+		HighlightedText->SetCheckedState(ECheckBoxState::Unchecked);
+	}
+	if(const FQuestionTagContextData* FoundContextData = GameplayTagContexts->FindQuestionTagContextData(QuestionData))
+	{
+		GenerateMessageToSend(FoundContextData->DialogueTag, PlayerTags, 0.5f, true);
+		GenerateMessageToSend(FoundContextData->ResponseTag, CurrentRequest.Character.CurrentTags, 2.0f, false);
+	}
+	HighlightedTextBlocks.Empty(MaxHighlights);
+}
+
+void AAnythingToDeclareGameState::OnQuestionContextHighlighted(const bool IsHighlighted,
+	UQuestionHighlightBox* InWidget)
+{
+	if(HighlightedTextBlocks.Contains(InWidget) && !IsHighlighted)
+	{
+		HighlightedTextBlocks.Remove(InWidget);
+	}
+	else if(IsHighlighted)
+	{
+		HighlightedTextBlocks.AddUnique(InWidget);
+		if(HighlightedTextBlocks.Num() > MaxHighlights)
+		{
+			if(UQuestionHighlightBox* HighlightToRemove = HighlightedTextBlocks[0])
+			{
+				HighlightToRemove->SetCheckedState(ECheckBoxState::Unchecked);
+			}
+			HighlightedTextBlocks.RemoveAt(0);
+		}
+	}
 }
 
 void AAnythingToDeclareGameState::GetMessageDataFromTable(const FGameplayTag& MessageType,
-	const TArray<FGameplayTag>& InTags, const UDataTable* InTable, TArray<const FDialogueDataTableRow*>& OutData)
+                                                          const TArray<FGameplayTag>& InTags, const UDataTable* InTable, TArray<const FDialogueDataTableRow*>& OutData)
 {
 	if(InTable != nullptr)
 	{
@@ -239,7 +311,7 @@ void AAnythingToDeclareGameState::GenerateMessageToSend(const FGameplayTag& Mess
 
 		TArray<const FDialogueDataTableRow*> FoundMatchingData;
 		// Get dialogue data specific to character appearance
-		if(!IsPlayer && CurrentRequest.CharacterAppearance != nullptr && CurrentRequest.CharacterAppearance->Dialogue != nullptr)
+		if(CurrentRequest.CharacterAppearance != nullptr && CurrentRequest.CharacterAppearance->Dialogue != nullptr)
 		{
 			GetMessageDataFromTable(MessageTagOverride, InTags, CurrentRequest.CharacterAppearance->Dialogue, FoundMatchingData);
 		}

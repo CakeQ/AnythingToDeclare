@@ -4,6 +4,7 @@
 #include "CodexGenericViewWidget.h"
 
 #include "CodexListEntry.h"
+#include "QuestionHighlightBox.h"
 #include "AnythingToDeclare/Documents/CodexDataInterface.h"
 #include "Components/Image.h"
 #include "UMG/Public/Components/TextBlock.h"
@@ -19,6 +20,11 @@ void UCodexGenericViewWidget::SetCodexEntry(const UObject* InObject)
 				EntryName->SetText(FText::FromString(CodexData->GetDataName()));
 			}
 
+			if(EntryNameHighlightBox != nullptr)
+			{
+				EntryNameHighlightBox->SetLinkedData(CodexEntry->GetLinkedData());
+			}
+
 			if(EntryDescription != nullptr)
 			{
 				EntryDescription->SetText(FText::FromString(CodexData->GetDescription()));
@@ -30,4 +36,9 @@ void UCodexGenericViewWidget::SetCodexEntry(const UObject* InObject)
 			}
 		}
 	}
+}
+
+void UCodexGenericViewWidget::GetQuestionContextData(TArray<UObject*>& OutArray) const
+{
+	OutArray.Add(EntryNameHighlightBox);
 }

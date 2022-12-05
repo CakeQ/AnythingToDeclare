@@ -3,6 +3,8 @@
 
 #include "CustomsRequestCodexMonitorWidget.h"
 
+#include "AnythingToDeclare/Documents/Widgets/CodexWidget.h"
+
 UCustomsRequestCodexMonitorWidget::UCustomsRequestCodexMonitorWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {

@@ -11,6 +11,7 @@
 #include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
 #include "AnythingToDeclare/Fluff/Names/NameDefinitionMap.h"
 #include "AnythingToDeclare/Settings/GameplayTagContextAsset.h"
+#include "AnythingToDeclare/Settings/RequestTagContext.h"
 #include "Logging/LogMacros.h"
 
 DEFINE_LOG_CATEGORY_STATIC(CustomsRequestsHelperLog, Log, All)
@@ -351,7 +352,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 	{
 		for(const FGameplayTag& RequestTag : InRequest.RequestModifiers)
 		{
-			if(const FGameplayTagContextData* TagContext = InGameplayTagContexts->FindTagContextData(RequestTag))
+			if(const FGameplayTagContextData* TagContext = InGameplayTagContexts->FindRequestTagContextData(RequestTag))
 			{
 				if(TagContext->Context == EGameplayTagContext::ManifestCargo)
 				{
@@ -494,6 +495,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 				if(const int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
 				{
 					NewEntry.CargoType = ChosenCargoType;
+					NewEntry.DisplayedCargoType = ChosenCargoType;
 					NewEntry.TotalUnits = UnitsChosen;
 				}
 			}
@@ -504,6 +506,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 			if(const int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
 			{
 				NewEntry.CargoType = ChosenCargoType;
+				NewEntry.DisplayedCargoType = ChosenCargoType;
 				NewEntry.TotalUnits = UnitsChosen;
 			}
 		}
@@ -528,6 +531,7 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 				}
 				if(ChosenCargoType != nullptr)
 				{
+					NewEntry.DisplayedCargoType = ChosenCargoType;
 					if(NewEntry.Modifiers.Contains(EGameplayTagModifier::HasTypo))
 					{
 						if(ChosenCargoType->NameTypos.IsEmpty())

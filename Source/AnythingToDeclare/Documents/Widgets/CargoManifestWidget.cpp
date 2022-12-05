@@ -1,8 +1,9 @@
 ﻿#include "CargoManifestWidget.h"
 
 #include "CargoManifestEntryWidget.h"
+#include "QuestionHighlightBox.h"
 #include "../CargoManifest.h"
-#include "AnythingToDeclare/Settings/GameplayTagContextAsset.h"
+#include "AnythingToDeclare/Settings/RequestTagContext.h"
 #include "UMG/Public/Components/TextBlock.h"
 
 void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
