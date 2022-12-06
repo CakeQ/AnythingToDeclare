@@ -10,6 +10,7 @@
 #include "UObject/Object.h"
 #include "QuestionHighlightBox.generated.h"
 
+enum class EGameplayTagModifier : uint8;
 class UTextBlock;
 class UCheckBox;
 class UQuestionHighlightBox;
@@ -26,27 +27,26 @@ class ANYTHINGTODECLARE_API UQuestionHighlightBox final : public UCheckBox, publ
 	
 public:
 	virtual void GetQuestionContextData(FDialogueQuestion& InQuestion) const override;
-	virtual void SetRequestTags(const TArray<FGameplayTag>& InTags) override;
 	virtual void BindQuestionHighlighting(UObject* InObject, const FName& InFunctionName) override;
 
 	UFUNCTION()
 	void OnCheckBoxStateChanged(bool bBIsChecked);
 
-	const UObject* GetLinkedData();
+	const UObject* GetLinkedData() const;
 	void SetLinkedData(const UObject* InData);
-	void SetHighlightableState(const TArray<FGameplayTag>& InRequestTags);
-public:
+	void SetLinkedData(const UObject* InData, const TArray<FGameplayTag>& InTags);
+	
 	FOnHighlightChangedDelegate OnHighlightChanged;
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Context")
 	FGameplayTag ContextTag;
 
-	UPROPERTY(EditAnywhere, Category = "Context")
-	TArray<FGameplayTag> RequestTagsThatAllowHighlighting;
-	
 	UPROPERTY()
 	const UObject* LinkedData;
+	
+	UPROPERTY()
+	TArray<FGameplayTag> LinkedTags;
 	
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "AnythingToDeclare/Settings/RequestTagContext.h"
 #include "UObject/ObjectMacros.h"
 
 #include "DialogueQuestion.generated.h"
@@ -21,17 +22,21 @@ public:
 	{
 	}
 	
-	FDialogueQuestionContext(const FGameplayTag& InContextSourceTag, const UObject* InLinkedAsset)
+	FDialogueQuestionContext(const FGameplayTag& InContextSourceTag, const UObject* InLinkedAsset, const TArray<FGameplayTag>& InTags)
 		: ContextSourceTag(InContextSourceTag)
 		, LinkedData(InLinkedAsset)
+		, Tags(InTags)
 	{
 	}
 	
 	UPROPERTY()
 	FGameplayTag ContextSourceTag;
-	
+
 	UPROPERTY()
 	const UObject* LinkedData;
+	
+	UPROPERTY()
+	TArray<FGameplayTag> Tags;
 };
 
 USTRUCT()
@@ -42,9 +47,13 @@ struct FDialogueQuestion
 public:
 	FDialogueQuestion()
 		: HighlightedSources()
+		, RequestTags()
 	{
 	}
 	
 	UPROPERTY()
 	TArray<FDialogueQuestionContext> HighlightedSources;
+
+	UPROPERTY()
+	TArray<FGameplayTag> RequestTags;
 };

@@ -22,17 +22,22 @@ const FQuestionTagContextData* UGameplayTagContextAsset::FindQuestionTagContextD
 	const FDialogueQuestion& QuestionRequest) const
 {
 	bool MatchingData = true;
+	TArray<FGameplayTag> SourceTags;
+	TArray<FGameplayTag> SourceRequestTags;
 	if(QuestionRequest.HighlightedSources.Num() > 1)
 	{
-		for(int32 i = 1; i < QuestionRequest.HighlightedSources.Num(); i++)
+		for(int32 i = 0; i < QuestionRequest.HighlightedSources.Num(); i++)
 		{
 			const FDialogueQuestionContext& CurrentContext = QuestionRequest.HighlightedSources[i];
-			const FDialogueQuestionContext& PreviousContext = QuestionRequest.HighlightedSources[i - 1];
-
-			if(CurrentContext.LinkedData != PreviousContext.LinkedData)
+			if(i > 0)
 			{
-				MatchingData = false;
+				if(const FDialogueQuestionContext& PreviousContext = QuestionRequest.HighlightedSources[i - 1]; CurrentContext.LinkedData != PreviousContext.LinkedData)
+				{
+					MatchingData = false;
+				}
 			}
+			SourceTags.Add(CurrentContext.ContextSourceTag);
+			SourceRequestTags.Append(CurrentContext.Tags);
 		}
 	}
 
@@ -43,17 +48,27 @@ const FQuestionTagContextData* UGameplayTagContextAsset::FindQuestionTagContextD
 			continue;
 		}
 
-		bool MatchingTags = true;
-		for(const FGameplayTag& RequirementTag : QuestionData.TagRequirements)
+		bool MatchingTags = false;
+		for(const FQuestionTagRequirement& RequirementTag : QuestionData.PossibleTagCombinations)
 		{
-			if(!QuestionRequest.HighlightedSources.FindByPredicate([RequirementTag](const FDialogueQuestionContext& Context){ return Context.ContextSourceTag == RequirementTag; }))
+			if(RequirementTag.MeetsRequirements(SourceTags))
 			{
-				MatchingTags = false;
+				MatchingTags = true;
 				break;
 			}
 		}
 
-		if(MatchingTags)
+		bool MatchingRequestTags = true;
+		for(const FGameplayTag& RequirementTag : QuestionData.RequiredRequestTags)
+		{
+			if(!SourceRequestTags.Contains(RequirementTag))
+			{
+				MatchingRequestTags = false;
+				break;
+			}
+		}
+
+		if(MatchingTags && MatchingRequestTags)
 		{
 			return &QuestionData;
 		}

@@ -6,6 +6,7 @@
 #include "CargoCategoryDefinition.h"
 #include "CargoDefinition.h"
 #include "AnythingToDeclare/Documents/Widgets/CodexListEntry.h"
+#include "AnythingToDeclare/Documents/Widgets/QuestionHighlightBox.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 
@@ -27,12 +28,37 @@ void UCodexCargoViewWidget::SetCodexEntry(const UObject* InObject)
 		
 			if(IsIllegal != nullptr)
 			{
-				IsIllegal->SetVisibility(CargoDef->IsIllegal ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+				const ESlateVisibility IllegalVisibility = CargoDef->IsIllegal ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+				IsIllegal->SetVisibility(IllegalVisibility);
+
+				if(IllegalHighlightBox != nullptr)
+				{
+					IllegalHighlightBox->SetVisibility(IllegalVisibility);
+					IllegalHighlightBox->SetLinkedData(CargoDef);
+				}
+			}
+
+			if(ValueHighlightBox != nullptr)
+			{
+				ValueHighlightBox->SetLinkedData(CargoDef);
+			}
+
+			if(WeightHighlightBox != nullptr)
+			{
+				WeightHighlightBox->SetLinkedData(CargoDef);
 			}
 		}
 
-		ResetUnits();
+		// ResetUnits();
 	}
+}
+
+void UCodexCargoViewWidget::GetQuestionContextData(TArray<UObject*>& OutArray) const
+{
+	Super::GetQuestionContextData(OutArray);
+	OutArray.Add(WeightHighlightBox);
+	OutArray.Add(ValueHighlightBox);
+	OutArray.Add(IllegalHighlightBox);
 }
 
 void UCodexCargoViewWidget::AdjustUnitReference(int32 InAmount)

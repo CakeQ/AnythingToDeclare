@@ -73,9 +73,12 @@ void AAnythingToDeclareGameState::BeginPlay()
 			GameplayTagContexts = &InLoadedContexts;
 			for(const FQuestionTagContextData& QuestionTagContextData : GameplayTagContexts->QuestionContexts)
 			{
-				if(QuestionTagContextData.TagRequirements.Num() > MaxHighlights)
+				for(const FQuestionTagRequirement& TagRequirement : QuestionTagContextData.PossibleTagCombinations)
 				{
-					MaxHighlights = QuestionTagContextData.TagRequirements.Num();
+					if(TagRequirement.TagRequirements.Num() > MaxHighlights)
+					{
+						MaxHighlights = TagRequirement.TagRequirements.Num();
+					}
 				}
 			}
 			if(DayDataMap != nullptr && CustomsDataMap != nullptr)

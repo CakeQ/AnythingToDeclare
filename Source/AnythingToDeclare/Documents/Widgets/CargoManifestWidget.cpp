@@ -3,7 +3,9 @@
 #include "CargoManifestEntryWidget.h"
 #include "QuestionHighlightBox.h"
 #include "../CargoManifest.h"
+#include "AnythingToDeclare/Fluff/Location/SubLocationDefinition.h"
 #include "AnythingToDeclare/Settings/RequestTagContext.h"
+#include "Components/ScrollBox.h"
 #include "UMG/Public/Components/TextBlock.h"
 
 void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
@@ -15,22 +17,38 @@ void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
 
 	if(OriginPlanet != nullptr)
 	{
-		OriginPlanet->SetText(FText::FromString(InManifest.OriginLocation));
+		OriginPlanet->SetText(FText::FromString(InManifest.OriginLocation.Value));
+		if(OriginPlanetHighlightBox != nullptr)
+		{
+			OriginPlanetHighlightBox->SetLinkedData(InManifest.OriginLocation.LinkedData, InManifest.OriginLocation.Tags);
+		}
 	}
 
 	if(OriginSubLocation != nullptr)
 	{
-		OriginSubLocation->SetText(FText::FromString(InManifest.OriginSubLocation));
+		OriginSubLocation->SetText(FText::FromString(InManifest.OriginSubLocation.Value));
+		if(OriginSubLocationHighlightBox != nullptr)
+		{
+			OriginSubLocationHighlightBox->SetLinkedData(InManifest.OriginSubLocation.LinkedData, InManifest.OriginSubLocation.Tags);
+		}
 	}
 
 	if(DestinationPlanet != nullptr)
 	{
-		DestinationPlanet->SetText(FText::FromString(InManifest.DestinationLocation));
+		DestinationPlanet->SetText(FText::FromString(InManifest.DestinationLocation.Value));
+		if(DestinationPlanetHighlightBox != nullptr)
+		{
+			DestinationPlanetHighlightBox->SetLinkedData(InManifest.DestinationLocation.LinkedData, InManifest.DestinationLocation.Tags);
+		}
 	}
 
 	if(DestinationSubLocation != nullptr)
 	{
-		DestinationSubLocation->SetText(FText::FromString(InManifest.DestinationSubLocation));
+		DestinationSubLocation->SetText(FText::FromString(InManifest.DestinationSubLocation.Value));
+		if(DestinationSubLocationHighlightBox != nullptr)
+		{
+			DestinationSubLocationHighlightBox->SetLinkedData(InManifest.DestinationSubLocation.LinkedData, InManifest.DestinationSubLocation.Tags);
+		}
 	}
 
 	if(CargoManifestEntries != nullptr)
@@ -58,10 +76,19 @@ void UCargoManifestWidget::SetCargoManifest(const FCargoManifest& InManifest)
 			{
 				continue;
 			}
-			WeightTotal += Entry.TotalUnits * Entry.DisplayWeightMultiplierPerUnit;
+			WeightTotal += Entry.TotalUnits.Value * Entry.DisplayWeightMultiplier.Value;
 		}
 		FNumberFormattingOptions FormattingOptions;
 		FormattingOptions.SetMaximumFractionalDigits(1);
 		CargoWeightTotal->SetText(FText::AsNumber(WeightTotal, &FormattingOptions));
 	}
+}
+
+void UCargoManifestWidget::GetQuestionContextData(TArray<UObject*>& OutArray) const
+{
+	OutArray.Add(OriginPlanetHighlightBox);
+	OutArray.Add(OriginSubLocationHighlightBox);
+	OutArray.Add(DestinationPlanetHighlightBox);
+	OutArray.Add(DestinationSubLocationHighlightBox);
+	OutArray.Add(CargoWeightTotalHighlightBox);
 }

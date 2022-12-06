@@ -21,7 +21,8 @@ class ANYTHINGTODECLARE_API UCodexCargoViewWidget : public UCodexGenericViewWidg
 
 public:
 	virtual void SetCodexEntry(const UObject* InObject) override;
-
+	virtual void GetQuestionContextData(TArray<UObject*>& OutArray) const override;
+	
 	UFUNCTION()
 	void AdjustUnitReference(int32 InAmount);
 	
@@ -49,7 +50,7 @@ public:
 protected:
 	virtual void NativeOnInitialized() override;
 	void RefreshUnitDisplays();
-
+	
 private:
 	UPROPERTY()
 	int32 UnitReferenceValue;
@@ -75,6 +76,15 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* UnitReferenceValueView;
 
+	UPROPERTY(meta = (BindWidget))
+	UQuestionHighlightBox* WeightHighlightBox;
+	
+	UPROPERTY(meta = (BindWidget))
+	UQuestionHighlightBox* ValueHighlightBox;
+	
+	UPROPERTY(meta = (BindWidget))
+	UQuestionHighlightBox* IllegalHighlightBox;
+	
 	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
 	UButton* UnitAddOneButton;
 

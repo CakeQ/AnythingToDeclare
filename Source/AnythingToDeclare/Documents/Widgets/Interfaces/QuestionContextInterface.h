@@ -23,8 +23,5 @@ public:
 	virtual void GetQuestionContextData(FDialogueQuestion& InQuestion) const = 0;
 	
 	UFUNCTION()
-	virtual void SetRequestTags(const TArray<FGameplayTag>& InTags) = 0;
-
-	UFUNCTION()
 	virtual void BindQuestionHighlighting(UObject* InObject, const FName& InFunctionName) = 0;
 };

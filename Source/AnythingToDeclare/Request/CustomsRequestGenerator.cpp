@@ -118,8 +118,7 @@ void CustomsRequestsHelper::GenerateCharacter(FCustomsRequest& InRequest, const 
 		const TArray<FName>& Names = NameTableToUse->GetRowNames();
 		for(int32 i = 0; i < NameComplexity; i++)
 		{
-			const FNameDefinitionData* ChosenName = NameTableToUse->FindRow<FNameDefinitionData>(Names[FMath::RandRange(0, Names.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString);
-			if(ChosenName != nullptr)
+			if(const FNameDefinitionData* ChosenName = NameTableToUse->FindRow<FNameDefinitionData>(Names[FMath::RandRange(0, Names.Num() - 1)], CustomsRequestsHelperPrivates::CustomsRequestHelperDataTableContextString); ChosenName != nullptr)
 			{
 				InRequest.Character.Names.Add(ChosenName->Name.ToString());
 			}
@@ -333,7 +332,7 @@ void CustomsRequestsHelper::GenerateCargoRoute(FCustomsRequest& InRequest, const
 void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, const UCustomsRequestDataMap* InDataMap, const UGameplayTagContextAsset* InGameplayTagContexts, const UDayDefinitionAsset* InDayDefinition)
 {
 	TArray<const FGameplayTagContextData*> CargoContexts;
-	TArray<EGameplayTagContext> TypoFields;
+	TMap<EGameplayTagContext, FGameplayTag> TypoFields;
 	if(InGameplayTagContexts != nullptr)
 	{
 		for(const FGameplayTag& RequestTag : InRequest.RequestTags)
@@ -344,10 +343,10 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 				{
 					CargoContexts.Add(TagContext);
 				}
-			}
-			else if(TagContext->Modifiers.Contains(EGameplayTagModifier::HasTypo))
-			{
-				TypoFields.Add(TagContext->Context);
+				else if(TagContext->Modifiers.Contains(EGameplayTagModifier::HasTypo))
+				{
+					TypoFields.Add(TagContext->Context, TagContext->Tag);
+				}
 			}
 		}
 	}
@@ -359,12 +358,14 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 
 	if(InRequest.OriginLocation != nullptr)
 	{
-		InRequest.CargoManifest.OriginSubLocation = InRequest.OriginLocation->Name;
+		InRequest.CargoManifest.OriginSubLocation.Value = InRequest.OriginLocation->Name;
+		InRequest.CargoManifest.OriginSubLocation.LinkedData = InRequest.OriginLocation;
 		if(ULocationDefinition* LocationDefinition = InRequest.OriginLocation->Location)
 		{
-			InRequest.CargoManifest.OriginLocation = LocationDefinition->Name;
+			InRequest.CargoManifest.OriginLocation.Value = LocationDefinition->Name;
+			InRequest.CargoManifest.OriginLocation.LinkedData = LocationDefinition;
 		}
-		if(TypoFields.Contains(EGameplayTagContext::ManifestOrigin))
+		if(const FGameplayTag* ContextTag = TypoFields.Find(EGameplayTagContext::ManifestOrigin))
 		{
 			if(FMath::RandBool())
 			{
@@ -374,7 +375,8 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 				}
 				else
 				{
-					InRequest.CargoManifest.OriginSubLocation = InRequest.OriginLocation->NameTypos[FMath::RandRange(0, InRequest.OriginLocation->NameTypos.Num() - 1)];
+					InRequest.CargoManifest.OriginSubLocation.Value = InRequest.OriginLocation->NameTypos[FMath::RandRange(0, InRequest.OriginLocation->NameTypos.Num() - 1)];
+					InRequest.CargoManifest.OriginSubLocation.Tags.AddUnique(*ContextTag);
 				}
 			}
 			else if(ULocationDefinition* LocationDefinition = InRequest.OriginLocation->Location)
@@ -385,7 +387,8 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 				}
 				else
 				{
-					InRequest.CargoManifest.OriginLocation = LocationDefinition->NameTypos[FMath::RandRange(0, LocationDefinition->NameTypos.Num() - 1)];
+					InRequest.CargoManifest.OriginLocation.Value = LocationDefinition->NameTypos[FMath::RandRange(0, LocationDefinition->NameTypos.Num() - 1)];
+					InRequest.CargoManifest.OriginLocation.Tags.AddUnique(*ContextTag);
 				}
 			}
 		}
@@ -393,12 +396,14 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 
 	if(InRequest.DestinationLocation != nullptr)
 	{
-		InRequest.CargoManifest.DestinationSubLocation = InRequest.DestinationLocation->Name;
+		InRequest.CargoManifest.DestinationSubLocation.Value = InRequest.DestinationLocation->Name;
+		InRequest.CargoManifest.DestinationSubLocation.LinkedData = InRequest.DestinationLocation;
 		if(ULocationDefinition* LocationDefinition = InRequest.DestinationLocation->Location)
 		{
-			InRequest.CargoManifest.DestinationLocation = LocationDefinition->Name;
+			InRequest.CargoManifest.DestinationLocation.Value = LocationDefinition->Name;
+			InRequest.CargoManifest.DestinationLocation.LinkedData = LocationDefinition;
 		}
-		if(TypoFields.Contains(EGameplayTagContext::ManifestDestination))
+		if(const FGameplayTag* ContextTag = TypoFields.Find(EGameplayTagContext::ManifestDestination))
 		{
 			if(FMath::RandBool())
 			{
@@ -408,7 +413,8 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 				}
 				else
 				{
-					InRequest.CargoManifest.DestinationSubLocation = InRequest.DestinationLocation->NameTypos[FMath::RandRange(0, InRequest.DestinationLocation->NameTypos.Num() - 1)];
+					InRequest.CargoManifest.DestinationSubLocation.Value = InRequest.DestinationLocation->NameTypos[FMath::RandRange(0, InRequest.DestinationLocation->NameTypos.Num() - 1)];
+					InRequest.CargoManifest.DestinationSubLocation.Tags.AddUnique(*ContextTag);
 				}
 			}
 			else if(ULocationDefinition* LocationDefinition = InRequest.DestinationLocation->Location)
@@ -419,7 +425,8 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 				}
 				else
 				{
-					InRequest.CargoManifest.DestinationLocation = LocationDefinition->NameTypos[FMath::RandRange(0, LocationDefinition->NameTypos.Num() - 1)];
+					InRequest.CargoManifest.DestinationLocation.Value = LocationDefinition->NameTypos[FMath::RandRange(0, LocationDefinition->NameTypos.Num() - 1)];
+					InRequest.CargoManifest.DestinationLocation.Tags.AddUnique(*ContextTag);
 				}
 			}
 		}
@@ -470,9 +477,15 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 					StandardCargoTypesToUse = &InDataMap->ContrabandWeights;
 				}
 				NewEntry.Modifiers = TagContext->Modifiers;
+				
+				NewEntry.DisplayName.Tags.Add(TagContext->Tag);
+				NewEntry.TotalUnits.Tags.Add(TagContext->Tag);
+				NewEntry.DisplayValueMultiplier.Tags.Add(TagContext->Tag);
+				NewEntry.DisplayWeightMultiplier.Tags.Add(TagContext->Tag);
 			}
 		}
 
+		UCargoTypeDefinition* CargoTypeChosen = nullptr;
 		const int32 MinimumUnits = FMath::Min(FMath::FloorToInt32(static_cast<float>(InRequest.Ship->UnitCapacity) * (i / CargoComplexity)), UnitsLeft);
 		if(MutualCargoTypes.Num() > 0 ? FMath::RandBool() : false)
 		{
@@ -480,29 +493,51 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 			{
 				if(const int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
 				{
-					NewEntry.CargoType = ChosenCargoType;
-					NewEntry.DisplayedCargoType = ChosenCargoType;
-					NewEntry.TotalUnits = UnitsChosen;
+					NewEntry.DisplayName.Value = ChosenCargoType->Name;
+					NewEntry.DisplayName.LinkedData = ChosenCargoType;
+
+					NewEntry.TotalUnits.Value = UnitsChosen;
+					NewEntry.TotalUnits.LinkedData = ChosenCargoType;
+					
+					NewEntry.DisplayWeightMultiplier.Value = ChosenCargoType->WeightMultiplierPerUnit;
+					NewEntry.DisplayWeightMultiplier.LinkedData = ChosenCargoType;
+					
+					NewEntry.DisplayValueMultiplier.Value = ChosenCargoType->ValuePerUnit;
+					NewEntry.DisplayValueMultiplier.LinkedData = ChosenCargoType;
+					
+					CargoTypeChosen = ChosenCargoType;
 				}
 			}
 		}
-		
-		if(UCargoTypeDefinition* ChosenCargoType = RandomEntryWithWeight(*StandardCargoTypesToUse, AlreadyUsedCargo))
+
+		if(CargoTypeChosen == nullptr)
 		{
-			if(const int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
+			if(UCargoTypeDefinition* ChosenCargoType = RandomEntryWithWeight(*StandardCargoTypesToUse, AlreadyUsedCargo); ChosenCargoType != nullptr)
 			{
-				NewEntry.CargoType = ChosenCargoType;
-				NewEntry.DisplayedCargoType = ChosenCargoType;
-				NewEntry.TotalUnits = UnitsChosen;
+				if(const int32 UnitsChosen = FMath::RandRange(MinimumUnits, FMath::Min(UnitsLeft, static_cast<int32>(FMath::Floor(RemainingWeight / (ChosenCargoType->WeightMultiplierPerUnit))))); UnitsChosen > 0)
+				{
+					NewEntry.DisplayName.Value = ChosenCargoType->Name;
+					NewEntry.DisplayName.LinkedData = ChosenCargoType;
+
+					NewEntry.TotalUnits.Value = UnitsChosen;
+					NewEntry.TotalUnits.LinkedData = ChosenCargoType;
+						
+					NewEntry.DisplayWeightMultiplier.Value = ChosenCargoType->WeightMultiplierPerUnit;
+					NewEntry.DisplayWeightMultiplier.LinkedData = ChosenCargoType;
+						
+					NewEntry.DisplayValueMultiplier.Value = ChosenCargoType->ValuePerUnit;
+					NewEntry.DisplayValueMultiplier.LinkedData = ChosenCargoType;
+					
+					CargoTypeChosen = ChosenCargoType;
+				}
 			}
 		}
 
-		if(NewEntry.CargoType != nullptr)
+		if(CargoTypeChosen != nullptr)
 		{
-			NewEntry.DisplayWeightMultiplierPerUnit = NewEntry.CargoType->WeightMultiplierPerUnit;
-			RemainingWeight -= NewEntry.TotalUnits * NewEntry.CargoType->WeightMultiplierPerUnit;
-			UnitsLeft -= NewEntry.TotalUnits;
-			AlreadyUsedCargo.Add(NewEntry.CargoType);
+			RemainingWeight -= NewEntry.TotalUnits.Value * NewEntry.DisplayWeightMultiplier.Value;
+			UnitsLeft -= NewEntry.TotalUnits.Value;
+			AlreadyUsedCargo.Add(CargoTypeChosen);
 
 			if(const bool CompletelyFakeEntry =  NewEntry.Modifiers.Contains(EGameplayTagModifier::Fake); CompletelyFakeEntry || NewEntry.Modifiers.Contains(EGameplayTagModifier::NameSwapped))
 			{
@@ -517,7 +552,10 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 				}
 				if(ChosenCargoType != nullptr)
 				{
-					NewEntry.DisplayedCargoType = ChosenCargoType;
+					NewEntry.DisplayName.LinkedData = ChosenCargoType;
+					NewEntry.TotalUnits.LinkedData = ChosenCargoType;
+					NewEntry.DisplayWeightMultiplier.LinkedData = ChosenCargoType;
+					NewEntry.DisplayValueMultiplier.LinkedData = ChosenCargoType;
 					if(NewEntry.Modifiers.Contains(EGameplayTagModifier::HasTypo))
 					{
 						if(ChosenCargoType->NameTypos.IsEmpty())
@@ -526,34 +564,32 @@ void CustomsRequestsHelper::GenerateCargoManifest(FCustomsRequest& InRequest, co
 						}
 						else
 						{
-							NewEntry.DisplayName = ChosenCargoType->NameTypos[FMath::RandRange(0, NewEntry.CargoType->NameTypos.Num() - 1)];
+							NewEntry.DisplayName.Value = ChosenCargoType->NameTypos[FMath::RandRange(0, ChosenCargoType->NameTypos.Num() - 1)];
 						}
 					}
 					else
 					{
-						NewEntry.DisplayName = ChosenCargoType->Name;
+						NewEntry.DisplayName.Value = ChosenCargoType->Name;
 					}
 					if(CompletelyFakeEntry)
 					{
-						NewEntry.DisplayWeightMultiplierPerUnit = ChosenCargoType->WeightMultiplierPerUnit;
+						NewEntry.DisplayWeightMultiplier.Value = ChosenCargoType->WeightMultiplierPerUnit;
+						
+						NewEntry.DisplayValueMultiplier.Value = ChosenCargoType->ValuePerUnit;
 					}
 					AlreadyUsedCargo.Add(ChosenCargoType);
 				}
 			}
 			else if(NewEntry.Modifiers.Contains(EGameplayTagModifier::HasTypo))
 			{
-				if(NewEntry.CargoType->NameTypos.IsEmpty())
+				if(CargoTypeChosen->NameTypos.IsEmpty())
 				{
-					UE_LOG(CustomsRequestsHelperLog, Error, TEXT("CustomsRequestsHelper::GenerateCargoManifest - cargo definition %s missing typos"), *NewEntry.CargoType->Name);
+					UE_LOG(CustomsRequestsHelperLog, Error, TEXT("CustomsRequestsHelper::GenerateCargoManifest - cargo definition %s missing typos"), *CargoTypeChosen->Name);
 				}
 				else
 				{
-					NewEntry.DisplayName = NewEntry.CargoType->NameTypos[FMath::RandRange(0, NewEntry.CargoType->NameTypos.Num() - 1)];
+					NewEntry.DisplayName.Value = CargoTypeChosen->NameTypos[FMath::RandRange(0, CargoTypeChosen->NameTypos.Num() - 1)];
 				}
-			}
-			if(NewEntry.DisplayName.IsEmpty())
-			{
-				NewEntry.DisplayName = NewEntry.CargoType->Name;
 			}
 			
 			InRequest.CargoManifest.Cargo.Add(NewEntry);
@@ -610,22 +646,26 @@ void CustomsRequestsHelper::FillFromCharacterAppearance(FCustomsRequest& InReque
 		if(USubLocationDefinition* SubLocationDefinition = InRequest.CharacterAppearance->OriginLocation)
 		{
 			InRequest.OriginLocation = SubLocationDefinition;
-			InRequest.CargoManifest.OriginSubLocation = SubLocationDefinition->Name;
+			InRequest.CargoManifest.OriginSubLocation.Value = SubLocationDefinition->Name;
+			InRequest.CargoManifest.OriginSubLocation.LinkedData = SubLocationDefinition;
 			
 			if(ULocationDefinition* LocationDefinition = SubLocationDefinition->Location)
 			{
-				InRequest.CargoManifest.OriginLocation = LocationDefinition->Name;
+				InRequest.CargoManifest.OriginLocation.Value = LocationDefinition->Name;
+				InRequest.CargoManifest.OriginLocation.LinkedData = LocationDefinition;
 			}
 		}
 		
 		if(USubLocationDefinition* SubLocationDefinition = InRequest.CharacterAppearance->DestinationLocation)
 		{
 			InRequest.DestinationLocation = SubLocationDefinition;
-			InRequest.CargoManifest.DestinationSubLocation = SubLocationDefinition->Name;
+			InRequest.CargoManifest.DestinationSubLocation.Value = SubLocationDefinition->Name;
+			InRequest.CargoManifest.DestinationSubLocation.LinkedData = SubLocationDefinition;
 			
 			if(ULocationDefinition* LocationDefinition = SubLocationDefinition->Location)
 			{
-				InRequest.CargoManifest.DestinationLocation = LocationDefinition->Name;
+				InRequest.CargoManifest.DestinationLocation.Value = LocationDefinition->Name;
+				InRequest.CargoManifest.DestinationLocation.LinkedData = LocationDefinition;
 			}
 		}
 	}

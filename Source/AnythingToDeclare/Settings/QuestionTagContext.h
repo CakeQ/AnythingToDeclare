@@ -14,27 +14,58 @@ enum class EQuestionTagModifier : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FQuestionTagContextData
+struct FQuestionTagRequirement
 {
 	GENERATED_BODY()
 
 public:
 
+	FQuestionTagRequirement()
+		: TagRequirements()
+	{}
+
+	bool MeetsRequirements(const TArray<FGameplayTag>& OtherTags) const
+	{
+		bool MeetsRequirements = true; 
+		for(const FGameplayTag& Tag : TagRequirements)
+		{
+			if(!OtherTags.Contains(Tag))
+			{
+				MeetsRequirements = false;
+				break;
+			}
+		}
+		return MeetsRequirements;
+	}
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGameplayTag> TagRequirements;
+};
+
+USTRUCT(BlueprintType)
+struct FQuestionTagContextData
+{
+	GENERATED_BODY()
+
+public:
 	FQuestionTagContextData()
 		: DialogueTag()
-		, TagRequirements()
+		, PossibleTagCombinations()
 		, Modifiers()
 	{}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Name)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag DialogueTag;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Name)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag ResponseTag;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Name)
-	TArray<FGameplayTag> TagRequirements;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FQuestionTagRequirement> PossibleTagCombinations;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Name)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGameplayTag> RequiredRequestTags;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<EQuestionTagModifier> Modifiers;
 };

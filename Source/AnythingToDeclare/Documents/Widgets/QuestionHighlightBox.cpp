@@ -10,13 +10,8 @@ void UQuestionHighlightBox::GetQuestionContextData(FDialogueQuestion& InQuestion
 {
 	if(GetCheckedState() == ECheckBoxState::Checked)
 	{
-		InQuestion.HighlightedSources.Emplace(ContextTag, LinkedData);
+		InQuestion.HighlightedSources.Emplace(ContextTag, LinkedData, LinkedTags);
 	}
-}
-
-void UQuestionHighlightBox::SetRequestTags(const TArray<FGameplayTag>& InTags)
-{
-	SetHighlightableState(InTags);
 }
 
 void UQuestionHighlightBox::BindQuestionHighlighting(UObject* InObject, const FName& InFunctionName)
@@ -32,7 +27,7 @@ void UQuestionHighlightBox::OnCheckBoxStateChanged(bool bBIsChecked)
 	OnHighlightChanged.ExecuteIfBound(GetCheckedState() == ECheckBoxState::Checked, this);
 }
 
-const UObject* UQuestionHighlightBox::GetLinkedData()
+const UObject* UQuestionHighlightBox::GetLinkedData() const
 {
 	return LinkedData;
 }
@@ -40,24 +35,21 @@ const UObject* UQuestionHighlightBox::GetLinkedData()
 void UQuestionHighlightBox::SetLinkedData(const UObject* InData)
 {
 	LinkedData = InData;
+	if(!LinkedTags.IsEmpty())
+	{
+		LinkedTags.Empty();
+	}
 }
 
-void UQuestionHighlightBox::SetHighlightableState(const TArray<FGameplayTag>& InRequestTags)
+void UQuestionHighlightBox::SetLinkedData(const UObject* InData, const TArray<FGameplayTag>& InTags)
 {
-	bool IsHighlightable = true;
-	for(const FGameplayTag& Tag : RequestTagsThatAllowHighlighting)
-	{
-		if(!InRequestTags.Contains(Tag))
-		{
-			IsHighlightable = false;
-		}
-	}
-	SetVisibility(IsHighlightable ? ESlateVisibility::Visible : ESlateVisibility::HitTestInvisible);
+	LinkedData = InData;
+	LinkedTags = InTags;
 }
 
 TSharedRef<SWidget> UQuestionHighlightBox::RebuildWidget()
 {
 	TSharedRef<SWidget> Return = Super::RebuildWidget();
-	OnCheckStateChanged.AddDynamic(this, &UQuestionHighlightBox::OnCheckBoxStateChanged);
+	OnCheckStateChanged.AddUniqueDynamic(this, &UQuestionHighlightBox::OnCheckBoxStateChanged);
 	return Return;
 }

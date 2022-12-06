@@ -1,12 +1,11 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "../Fluff/Cargo/CargoDefinition.h"
-
-#include "UObject/ObjectMacros.h"
+#include "LinkedDataTypes.h"
 
 #include "CargoManifest.generated.h"
 
+class USubLocationDefinition;
 enum class EGameplayTagModifier : uint8;
 
 USTRUCT()
@@ -16,30 +15,28 @@ struct FCargoManifestEntry
 public:
 
 	FCargoManifestEntry()
-		: CargoType(nullptr)
-		, DisplayedCargoType(nullptr)
-		, DisplayWeightMultiplierPerUnit(0.0f)
-		, TotalUnits(0)
+		: DisplayName()
+		, DisplayWeightMultiplier()
+		, DisplayValueMultiplier()
+		, TotalUnits()
+		, Modifiers()
 	{
 	}
 
 	UPROPERTY()
-	UCargoTypeDefinition* CargoType;
+	FLinkedDataString DisplayName;
 
 	UPROPERTY()
-	UCargoTypeDefinition* DisplayedCargoType;
-
+	FLinkedDataFloat DisplayWeightMultiplier;
+	
 	UPROPERTY()
-	FString DisplayName;
-
+	FLinkedDataFloat DisplayValueMultiplier;
+	
 	UPROPERTY()
-	float DisplayWeightMultiplierPerUnit;
+	FLinkedDataInt TotalUnits;
 	
 	UPROPERTY()
 	TArray<EGameplayTagModifier> Modifiers;
-	
-	UPROPERTY()
-	int32 TotalUnits;
 };
 
 USTRUCT()
@@ -51,16 +48,16 @@ public:
 	FString ShipName;
 
 	UPROPERTY()
-	FString OriginLocation;
+	FLinkedDataString OriginLocation;
 
 	UPROPERTY()
-	FString OriginSubLocation;
+	FLinkedDataString OriginSubLocation;
 
 	UPROPERTY()
-	FString DestinationLocation;
+	FLinkedDataString DestinationLocation;
 
 	UPROPERTY()
-	FString DestinationSubLocation;
+	FLinkedDataString DestinationSubLocation;
 
 	UPROPERTY()
 	TArray<FCargoManifestEntry> Cargo;
